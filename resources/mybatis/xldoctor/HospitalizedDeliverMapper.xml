@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="HospitalizedDeliverMapper">
+
+
+	<!-- 添加住院分娩信息 -->
+	<insert id="hospitalizedDeliverAdd" parameterType="pd" flushCache="false">
+		INSERT INTO HOSPITALIZED_DELIVER 
+				(H_ID, H_TYPE, D_DATETIME, D_WEEK, D_ALLTIME, D_STYLES, M_COMPLICATION, B_SEX, B_WEIGHT, B_HEIGHT, B_NUMBER, B_COMPLICATION, ATTACHMENT) 
+		VALUES 	
+				(#{h_id}, #{h_type},#{d_datetime}, #{d_week}, #{d_alltime},#{d_styles},#{m_complication},#{b_sex},#{b_weight},#{b_height},#{b_number}, #{b_complication},#{attachment})
+	</insert>
+	
+	<!-- 删除住院分娩信息 -->
+	<delete id="hospitalizedDeliverDel" parameterType="pd" flushCache="false">
+		DELETE FROM HOSPITALIZED_DELIVER
+		WHERE 
+			H_ID = #{h_id}
+	</delete>
+
+	<!-- 修改住院分娩信息 -->
+	<update id="hospitalizedDeliverUpd" parameterType="pd" flushCache="false">
+		UPDATE  HOSPITALIZED_DELIVER
+		SET 	
+		H_TYPE					 	 =	#{h_type},
+		D_DATETIME					 =	#{d_datetime},
+		D_WEEK						 =	#{d_week},
+		D_ALLTIME				 	 =	#{d_alltime},
+		D_STYLES					 =	#{d_styles},
+		M_COMPLICATION				 =	#{m_complication},
+		B_SEX						 =	#{b_sex},
+		B_WEIGHT					 =	#{b_weight},
+		B_HEIGHT	 				 =	#{b_height},
+		B_NUMBER	 				 =	#{b_number},
+		B_COMPLICATION	 			 =	#{b_complication},
+		ATTACHMENT	 				 =	#{attachment}
+			WHERE 
+				H_ID = #{h_id}
+	</update>
+	
+		<!-- 住院分娩信息图片删除 -->
+	<update id="attachmentDel" parameterType="pd" flushCache="false">
+		UPDATE  HOSPITALIZED_DELIVER
+		SET 	
+		ATTACHMENT	 				 =''
+			WHERE 
+				H_ID = #{h_id}
+	</update>
+</mapper>

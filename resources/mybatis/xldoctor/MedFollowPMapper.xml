@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="MedFollowPMapper">
+
+	<cache type="org.mybatis.caches.ehcache.LoggingEhcache" />
+
+
+	<!-- 添加孕期随访记录 -->
+	<insert id="medFollowPAdd" parameterType="pd" flushCache="false">
+		INSERT INTO MED_FOLLOW_P
+		(
+			F_ID,
+			P_WEIGHT,
+			P_WAIST,
+			P_HEART,
+			P_BLOOD,
+			P_UNUSUAL,
+			P_ATTACHMENT,
+			P_EDUCATION
+		)
+		VALUES(
+		#{f_id}, #{p_weight}, #{p_waist},#{p_heart}, #{p_blood}, #{p_unusual}, #{p_attachment}, #{p_education}
+		)
+	</insert>
+	
+	<!-- 删除孕期随访记录 -->
+	<delete id="medFollowPDel" parameterType="pd" flushCache="false">
+		DELETE f,p FROM med_follow f 
+		INNER JOIN med_follow_p p ON f.f_id= p.f_id
+		WHERE f.f_id = #{f_id}
+	</delete>
+
+	<!-- 修改孕期随访记录-->
+	<update id="medFollowPUpd" parameterType="pd" flushCache="false">
+		UPDATE  MED_FOLLOW_P
+		SET 	
+			P_WEIGHT			=#{p_weight},
+			P_WAIST				=#{p_waist},
+			P_HEART				=#{p_heart},
+			P_BLOOD				=#{p_blood},
+			P_UNUSUAL			=#{p_unusual},
+			P_ATTACHMENT		=#{p_attachment},
+			P_EDUCATION			=#{p_education}
+		WHERE
+				F_ID		=#{f_id}
+	</update>
+
+	<!-- 删除孕期随访图片 -->
+	<update id="attachmentDel" parameterType="pd" flushCache="false">
+		UPDATE  MED_FOLLOW_P
+		SET 	
+			P_ATTACHMENT		=''
+		WHERE
+				F_ID		=#{f_id}
+	</update>
+</mapper>

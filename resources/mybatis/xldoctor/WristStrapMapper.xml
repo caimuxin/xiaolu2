@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="WristStrapMapper">
+
+	<cache type="org.mybatis.caches.ehcache.LoggingEhcache"/>
+	
+	<resultMap type="pd" id="wristStrapMap">
+		<result column="user_id" property="userId"/>
+		<result column="device_id" property="deviceId"/>
+		<result column="step" property="step"/>
+		<result column="total_kcal" property="totalKcal"/>
+		<result column="meter" property="meter"/>
+		<result column="dynamic_kcal" property="dynamicKcal"/>
+		<result column="dynamic_time" property="dynamicTime"/>
+		<result column="static_kcal" property="staticKcal"/>
+		<result column="static_time" property="staticTime"/>
+		<result column="sleep_deep" property="sleepDeep"/>
+		<result column="sleep_shallow" property="sleepShallow"/>
+		<result column="data_date" property="dataDate"/>
+		<result column="create_date" property="createDate"/>
+		<result column="day_of_week" property="dayOfWeek"/>
+	</resultMap>
+	
+	<!-- 计步数据查询 -->
+	<select id="findWristStrap" parameterType = "pd" resultMap="wristStrapMap" useCache="false">
+		SELECT 
+		  id,
+		  user_id,
+		  device_id,
+		  step,
+		  total_kcal,
+		  meter,
+		  dynamic_kcal,
+		  dynamic_time,
+		  static_kcal,
+		  static_time,
+		  sleep_deep,
+		  sleep_shallow,
+		  data_date,
+		  create_date, 
+		  DAYOFWEEK(data_date) AS day_of_week
+		FROM
+		  u_wriststrap 
+		WHERE 1 = 1
+			AND WEEKOFYEAR(data_date) = WEEKOFYEAR(NOW())
+		<if test="userId !=null and userId!=''">
+			AND user_id =#{userId} 
+		</if>
+		ORDER BY day_of_week ASC
+	</select>
+	
+	<!-- 计步数据查询 月 -->
+	<select id="findWristStrapMonth" parameterType = "pd" resultMap="wristStrapMap" useCache="false">
+		SELECT 
+		  id,
+		  user_id,
+		  device_id,
+		  step,
+		  total_kcal,
+		  meter,
+		  dynamic_kcal,
+		  dynamic_time,
+		  static_kcal,
+		  static_time,
+		  sleep_deep,
+		  sleep_shallow,
+		  data_date,
+		  create_date
+		FROM
+		  u_wriststrap 
+		WHERE 1 = 1
+			AND DATE_FORMAT(data_date, '%Y-%m') = DATE_FORMAT(NOW(), '%Y-%m') 
+		<if test="userId !=null and userId!=''">
+			AND user_id =#{userId} 
+		</if>
+		ORDER BY data_date ASC
+	</select>
+	
+	<!-- 计步新增 -->
+	<insert id="addWristStrap" parameterType="pd">
+		INSERT INTO xl_doctor.u_wriststrap (
+		  user_id,
+		  device_id,
+		  step,
+		  total_kcal,
+		  meter,
+		  dynamic_kcal,
+		  dynamic_time,
+		  static_kcal,
+		  static_time,
+		  sleep_deep,
+		  sleep_shallow,
+		  data_date,
+		  create_date
+		) 
+		VALUES
+		  (
+		    #{userId},
+		    #{deviceId},
+		    #{step},
+		    #{totalKcal},
+		    #{meter},
+		    #{dynamicKcal},
+		    #{dynamicTime},
+		    #{staticKcal},
+		    #{staticTime},
+		    #{sleepDeep},
+		    #{sleepShallow},
+		    #{dataDate},
+		    #{createDate}
+		  ) ;
+	</insert>
+	
+	<!-- 计步数据查询 -->
+	<select id="findWristStrapByUidAndDate" parameterType = "pd" resultMap="wristStrapMap" >
+		SELECT 
+		  id
+		FROM
+		  u_wriststrap 
+		WHERE 1 = 1
+			AND user_id =#{userId}
+			AND data_date =#{dataDate}
+	</select>
+	
+	<!-- 更新数据 -->
+	<update id="updateWristStrap" parameterType="pd"  flushCache="false">
+	UPDATE u_wriststrap 
+	SET 
+		  step = #{step},
+		  total_kcal = #{totalKcal},
+		  meter = #{meter},
+		  dynamic_kcal = #{dynamicKcal},
+		  dynamic_time = #{dynamicTime},
+		  static_kcal = #{staticKcal},
+		  static_time = #{staticTime},
+		  sleep_deep = #{sleepDeep},
+		  sleep_shallow = #{sleepShallow}
+	WHERE
+		  id	= #{id}
+	</update>
+	
+</mapper>

@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="MedFollowMapper">
+
+	<cache type="org.mybatis.caches.ehcache.LoggingEhcache" />
+
+	<!-- 查询所有随访记录 -->
+	<select id="medFollowlistPage" parameterType="page" resultType="pd" useCache="false">
+		
+		SELECT
+			A.F_ID,
+			A.USER_ID,
+			A.F_TYPE,
+			A.F_DATE,
+			A.DOCTOR_ID,
+			A.DOCTOR_NAME,
+			A.HOSPITAL_ID,
+			A.HOSPITAL_NAME,
+			A.F_STYLE,
+			B.HOSPITALNAME,
+			C.DOCTOR_NAME AS DOCTORNAME,
+			P.P_ATTACHMENT
+		FROM MED_FOLLOW AS A 
+		LEFT JOIN D_HOSPITALINFO AS B ON A.HOSPITAL_ID=B.ID 
+		LEFT JOIN DOCTOR_INFO AS C ON A.DOCTOR_ID=C.DOCTOR_ID
+		LEFT JOIN med_follow_p AS P ON P.f_id=A.f_id
+		WHERE 1=1
+		<if test="pd.uuid !=null and  pd.uuid !=''">
+			AND USER_ID=#{pd.uuid}
+		</if>
+	</select>
+	
+	<!-- 根据Id查询随访记录      孕期-->
+	<select id="findMedFollowPId" parameterType="pd" resultType="pd" useCache="false">
+
+		SELECT
+			A.F_ID,
+			A.USER_ID,
+			A.F_TYPE,
+			A.F_DATE,
+			A.DOCTOR_ID,
+			A.DOCTOR_NAME,
+			A.HOSPITAL_ID,
+			A.HOSPITAL_NAME,
+			A.F_STYLE,
+			B.P_WEIGHT,
+			B.P_WAIST,
+			B.P_HEART,
+			B.P_BLOOD,
+			B.P_UNUSUAL,
+			B.P_ATTACHMENT,
+			B.P_EDUCATION
+			FROM
+			MED_FOLLOW A LEFT JOIN MED_FOLLOW_P B ON A.F_ID=B.F_ID
+		WHERE A.F_ID=#{f_id}
+		
+	</select>
+	
+	<!-- 根据Id查询随访记录      产后-->
+	<select id="findMedFollowDId" parameterType="pd" resultType="pd" useCache="false">
+
+		SELECT
+			A.F_ID,
+			A.USER_ID,
+			A.F_TYPE,
+			A.F_DATE,
+			A.DOCTOR_ID,
+			A.DOCTOR_NAME,
+			A.HOSPITAL_ID,
+			A.HOSPITAL_NAME,
+			A.F_STYLE,
+			C.D_WEIGHT,
+			C.D_BLOOD,
+			C.D_HEALTH,
+			C.D_PSYCHIC,
+			C.D_UBER,
+			C.D_LYMA,
+			C.D_WOMB,
+			C.D_WOUND,
+			C.D_EDUCATION
+			FROM
+			MED_FOLLOW  A
+			LEFT JOIN MED_FOLLOW_D  C ON A.F_ID = C.F_ID
+		WHERE A.F_ID=#{f_id}
+		
+	</select>
+	
+	<!-- 添加随访记录 -->
+	<insert id="medFollowAdd" parameterType="pd" flushCache="false">
+		INSERT INTO MED_FOLLOW
+		(
+		F_ID,
+		USER_ID,
+		F_TYPE,
+		F_DATE,
+		DOCTOR_ID,
+		DOCTOR_NAME,
+		HOSPITAL_ID,
+		HOSPITAL_NAME,
+		F_STYLE,
+		HAVE_FINISHED
+		)
+		VALUES(
+		#{f_id}, #{user_id}, #{f_type},#{f_date}, #{doctor_id}, #{doctor_name}, #{hospital_id}, #{hospital_name}, #{f_style},#{have_finished}
+		)
+	</insert>
+	
+	<!-- 删除随访记录 -->
+	<delete id="medFollowDel" parameterType="pd" flushCache="false">
+		DELETE FROM MED_FOLLOW
+		WHERE 
+			F_ID = #{f_id}
+	</delete>
+
+	<!-- 修改随访记录-->
+	<update id="medFollowUpd" parameterType="pd" flushCache="false">
+		UPDATE  MED_FOLLOW
+		SET 	
+		USER_ID				=#{user_id},
+		F_TYPE				=#{f_type},
+		F_DATE				=#{f_date},
+		DOCTOR_ID			=#{doctor_id},
+		DOCTOR_NAME			=#{doctor_name},
+		HOSPITAL_ID			=#{hospital_id},
+		HOSPITAL_NAME		=#{hospital_name},
+		F_STYLE				=#{f_style}
+			where 
+				F_ID		=#{f_id}
+	</update>
+	
+	<!-- 查询本周随人数 -->
+	<select id="medFllowWeekCount" parameterType="pd" resultType="java.lang.Integer" useCache="false">
+	SELECT COUNT(*) FROM med_follow 
+	
+	<where>
+	<if test="curWDate != null and curWDate !='' ">
+	f_date = #{curWDate}
+	</if>
+	
+	<if test="doctorId !=null and doctorId != '' ">
+	and doctor_id = #{doctorId}	
+	</if>
+	
+	and f_type='d_42'	
+	</where>
+	</select>
+	
+	<!-- 查询某一天随访人的信息-->
+	<select id="medfllowDayList" parameterType="pd" resultType="pd" useCache="false">
+	
+	SELECT  a.f_id AS fid,a.have_finished AS finished,b.user_namezs as username,a.f_date as fdate,d.d_datetime as ddatetime 
+	FROM med_follow AS a 
+	LEFT JOIN sys_user_info AS b ON a.user_id=b.uuid 
+	left JOIN hospitalized AS c ON a.user_id=c.user_id 
+	LEFT JOIN hospitalized_deliver AS d ON d.h_id=c.h_id
+	WHERE 1=1
+	
+<!-- 	SELECT a.f_id AS fid,a.have_finished AS finished FROM med_follow AS a where 1=1
+ -->	
+	<if test="dateStr !=null and dateStr !=''">
+	AND DATE_FORMAT(a.f_date,'%y-%m-%d')=DATE_FORMAT(#{dateStr},'%y-%m-%d')
+	</if>
+	
+	<if test="doctorId !=null and doctorId != '' ">
+	and a.doctor_id = #{doctorId}	
+	</if>
+	and c.h_type='b'
+	and a.f_type='d_42'
+	</select>
+</mapper>

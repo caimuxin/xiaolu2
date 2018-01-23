@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="StatisticManageMapper">
+
+	<cache type="org.mybatis.caches.ehcache.LoggingEhcache"/>
+
+	<!-- 怀孕月数统计 -->
+	<select id="findPregnantMonth" parameterType = "pd" resultType="pd">
+		SELECT COUNT(*) amount,FLOOR((280 - DATEDIFF( u_duedate,NOW()))/28) umonth 
+		FROM sys_user_info 
+		WHERE DATEDIFF( u_duedate,NOW())>0
+		GROUP BY umonth
+	</select>
+	
+	<!-- 医生职位统计 -->
+	<select id="findDoctorStatistic" parameterType = "pd" resultType="pd">
+		SELECT COUNT(*)damount,doctor_position as position FROM doctor_info
+		WHERE d_status IS NULL
+		OR d_status =1
+		GROUP BY doctor_position
+	</select>
+	
+	<!-- 既往史统计 -->
+	<select id="findPastStatistic" parameterType = "pd" resultType = "pd">
+		SELECT COUNT(*) amount
+		FROM sys_user_info 
+		WHERE u_past LIKE CONCAT('%',#{pastName},'%')
+	</select>
+	
+	<!-- 家族及个人史 -->
+	<select id="findFamilyStatistic" parameterType = "pd" resultType = "pd">
+		SELECT COUNT(*) amount 
+		FROM sys_user_info
+		WHERE u_family LIKE CONCAT('%',#{familyName},'%')
+	</select>
+	
+	<!-- 医生接诊量查询 -->
+	<resultMap type="pd" id="doctorMapper">
+		<result column="doctor_id" property="doctorId"/>
+		<result column="doctor_name" property="doctorName"/>
+		<result column="doctor_position" property="doctorPosition"/>
+		<result column="doctor_photo" property="doctorPhoto"/>
+		<result column="amount" property="amount"/>
+	</resultMap>
+	<select id="findDoctorTopStatistic" parameterType = "pd" resultMap = "doctorMapper">
+		SELECT 
+			doctor_id,doctor_name,doctor_position,doctor_photo,COUNT(*) amount
+		FROM
+			(
+			(SELECT d.doctor_id,d.doctor_name,d.doctor_position,d.doctor_photo
+			FROM doctor_info d 
+			LEFT JOIN hospitalized h ON d.doctor_id=h.doctor_id)
+			UNION ALL
+			(SELECT d.doctor_id,d.doctor_name,d.doctor_position,d.doctor_photo
+			FROM doctor_info d 
+			LEFT JOIN u_outpatient o ON o.doctor_id = d.doctor_id
+			)
+			UNION ALL
+			(
+			SELECT d.doctor_id,d.doctor_name,d.doctor_position,d.doctor_photo
+			FROM doctor_info d 
+			LEFT JOIN med_follow f ON f.doctor_id = d.doctor_id
+			)
+			) dd
+		GROUP BY doctor_name
+		ORDER BY amount DESC
+		LIMIT 0,5
+	</select>
+	
+	
+</mapper>

@@ -1,0 +1,384 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="ExamRecordMapper">
+	
+	<resultMap type="pd" id="bloodMeterMap">
+		<result column="b_date" property="bDate"/>
+		<result column="b_diastolic" property="bDiastolic"/>
+		<result column="b_systolic" property="bSystolic"/>
+		<result column="user_namezs" property="userNamezs"/>
+		<result column="b_heartrate" property="heartRate"/>
+		<result column="bloodmeter_id" property="bloodmeterId"/>
+	</resultMap>
+	
+	<resultMap type="pd" id="weighMap">
+		<result column="w_date" property="wDate"/>
+		<result column="w_weight" property="wWeight"/>
+		<result column="user_id" property="userId"/>
+		<result column="weighing_id" property="weighingId"/>
+		<result column="w_fat" property="wFat"/>
+		<result column="remark" property="remark"/>
+		<result column="w_bmi" property="wBmi"/>
+		<result column="user_namezs" property="userNamezs"/>
+		<result column="w_operate" property="wOperate"/>
+	</resultMap>
+	
+	<resultMap type="pd" id="outPatientMap">
+		<result column="o_date" property="oDate"/>
+		<result column="o_heart" property="oHeart"/>
+		<result column="user_namezs" property="userNamezs"/>
+		<result column="id" property="id"/>
+		<result column="user_id" property="userId"/>
+		<result column="h_operate" property="hOperate"/>
+		<result column="remark" property="remark"/>
+	</resultMap>
+	<!-- 获取血压趋势图数据 -->
+	<select id="findBloodChart" parameterType="pd" resultMap = "bloodMeterMap">
+		SELECT DISTINCT(DATE_FORMAT(b_datetime,'%Y/%m/%d')) AS b_date,b_diastolic,b_systolic 
+		FROM u_bloodmeter
+			WHERE 1 = 1 
+				AND user_id = #{uuid}
+			<if test="timeType =='week'">
+				AND WEEKOFYEAR(b_datetime) = WEEKOFYEAR(NOW())
+			</if>
+			<if test="timeType =='month'">
+				AND DATE_FORMAT(b_datetime,'%Y-%m')=DATE_FORMAT(NOW(),'%Y-%m')
+			</if>
+			<if test="timeType =='season'">
+				AND QUARTER(b_datetime)=QUARTER(NOW())
+			</if>
+			<if test="startTime !=null and startTime !=''">	
+				<![CDATA[
+				and b_datetime>=#{startTime}
+				]]>
+			</if>
+			<if test="endTime !=null and endTime !=''">	
+				<![CDATA[
+				and b_datetime<=#{endTime}
+				]]>
+			</if>
+			order by b_datetime
+	</select>
+	
+	
+	<!-- 获取体重趋势图数据  -->
+	<select id="findWeighChart" parameterType="pd" resultMap = "weighMap">
+		SELECT DISTINCT(DATE_FORMAT(w_datetime,'%Y/%m/%d')) AS w_date,w_weight,user_id 
+		FROM u_weighing
+			WHERE 1 = 1 
+				AND user_id = #{uuid}
+			<if test="timeType =='week'">
+				AND WEEKOFYEAR(w_datetime) = WEEKOFYEAR(NOW())
+			</if>
+			<if test="timeType =='month'">
+				AND DATE_FORMAT(w_datetime,'%Y-%m')=DATE_FORMAT(NOW(),'%Y-%m')
+			</if>
+			<if test="timeType =='season'">
+				AND QUARTER(w_datetime)=QUARTER(NOW())
+			</if>
+			<if test="startTime !=null and startTime !=''">	
+				<![CDATA[
+				and w_datetime>=#{startTime}
+				]]>
+			</if>
+			<if test="endTime !=null and endTime !=''">	
+				<![CDATA[
+				and w_datetime<=#{endTime}
+				]]>
+			</if>
+			order by w_datetime
+	</select>
+	
+	<!-- 血压数据记录 -->
+	<select id="bloodlistPage" parameterType="Page" resultMap="bloodMeterMap" useCache="false">
+		SELECT DISTINCT(DATE_FORMAT(b_datetime,'%Y-%m-%d %H:%i')) AS b_date,b_diastolic,b_systolic 
+		FROM u_bloodmeter
+			WHERE 1 = 1 
+				<if test="pd.uuid !=null and pd.uuid !=''">
+					AND user_id = #{pd.uuid}
+				</if>
+				<if test="pd.timeType =='month'">
+					AND DATE_FORMAT(b_datetime,'%Y-%m')=DATE_FORMAT(NOW(),'%Y-%m')
+				</if>
+				<if test="pd.timeType =='season'">
+					AND QUARTER(b_datetime)=QUARTER(NOW())
+				</if>
+				<if test="pd.timeType =='week'">
+					AND WEEKOFYEAR(b_datetime) = WEEKOFYEAR(NOW())
+				</if>
+				<if test="pd.startTime !=null and pd.startTime !=''">	
+					<![CDATA[
+					and b_datetime>=#{pd.startTime}
+					]]>
+				</if>
+				<if test="pd.endTime !=null and pd.endTime !=''">	
+					<![CDATA[
+					and b_datetime<=#{pd.endTime}
+					]]>
+				</if>
+				order by b_datetime
+	</select>
+	
+	<!-- 异常血压数据记录 -->
+	<select id="unbloodlistPage" parameterType="Page" resultMap="bloodMeterMap" useCache="false">
+		SELECT DISTINCT(DATE_FORMAT(b.b_datetime,'%Y-%m-%d %H:%i')) AS b_date,b.b_diastolic,b.b_systolic,b.b_heartrate,b.b_operate,b.remark,b.user_id,b.bloodmeter_id,u.user_namezs
+		FROM u_bloodmeter b
+		LEFT JOIN sys_user_info u ON u.uuid = b.user_id
+			WHERE 1 = 1 
+			AND
+			<![CDATA[
+			(b.b_diastolic<60 OR b.b_diastolic>90 OR b.b_systolic<90 OR b.b_systolic>140 OR b.b_heartrate<45 OR b.b_heartrate>195)
+			]]>	
+				<if test="pd.bloodmeterId !=null and pd.bloodmeterId !=''">
+					AND b.bloodmeter_id = #{pd.bloodmeterId}
+				</if>
+				<if test="pd.uuid !=null and pd.uuid !=''">
+					AND b.user_id = #{pd.uuid}
+				</if>
+				<if test="pd.timeType =='month'">
+					AND DATE_FORMAT(b.b_datetime,'%Y-%m')=DATE_FORMAT(NOW(),'%Y-%m')
+				</if>
+				<if test="pd.timeType =='season'">
+					AND QUARTER(b.b_datetime)=QUARTER(NOW())
+				</if>
+				<if test="pd.timeType =='week'">
+					AND WEEKOFYEAR(b.b_datetime) = WEEKOFYEAR(NOW())
+				</if>
+				<if test="pd.startTime !=null and pd.startTime !=''">	
+					<![CDATA[
+					and b.b_datetime>=#{pd.startTime}
+					]]>
+				</if>
+				<if test="pd.endTime !=null and pd.endTime !=''">	
+					<![CDATA[
+					and b.b_datetime<=#{pd.endTime}
+					]]>
+				</if>
+				order by b.b_datetime
+	</select>
+	
+	<!-- 异常血压总数 -->
+	<select id="unbloodAmount" parameterType="Page" resultMap="bloodMeterMap" useCache="false">
+			SELECT * FROM (
+				SELECT COUNT(DISTINCT(b.user_id)) unamount
+				FROM u_bloodmeter b
+				WHERE 1 = 1 
+				AND
+				<![CDATA[
+				(b.b_diastolic<60 OR b.b_diastolic>90 OR b.b_systolic<90 OR b.b_systolic>140 OR b.b_heartrate<45 OR b.b_heartrate>195)
+				]]>	
+				<if test="pd.bloodmeterId !=null and pd.bloodmeterId !=''">
+					AND b.bloodmeter_id = #{pd.bloodmeterId}
+				</if>
+				<if test="pd.uuid !=null and pd.uuid !=''">
+					AND b.user_id = #{pd.uuid}
+				</if>
+				<if test="pd.timeType =='month'">
+					AND DATE_FORMAT(b.b_datetime,'%Y-%m')=DATE_FORMAT(NOW(),'%Y-%m')
+				</if>
+				<if test="pd.timeType =='season'">
+					AND QUARTER(b.b_datetime)=QUARTER(NOW())
+				</if>
+				<if test="pd.timeType =='week'">
+					AND WEEKOFYEAR(b.b_datetime) = WEEKOFYEAR(NOW())
+				</if>
+				<if test="pd.startTime !=null and pd.startTime !=''">	
+					<![CDATA[
+					and b.b_datetime>=#{pd.startTime}
+					]]>
+				</if>
+				<if test="pd.endTime !=null and pd.endTime !=''">	
+					<![CDATA[
+					and b.b_datetime<=#{pd.endTime}
+					]]>
+				</if>
+		
+		)unblood,			
+		(
+				SELECT COUNT(DISTINCT(b.user_id)) allamount
+				FROM u_bloodmeter b
+				WHERE 1 = 1 
+				<if test="pd.bloodmeterId !=null and pd.bloodmeterId !=''">
+					AND b.bloodmeter_id = #{pd.bloodmeterId}
+				</if>
+				<if test="pd.uuid !=null and pd.uuid !=''">
+					AND b.user_id = #{pd.uuid}
+				</if>
+				<if test="pd.timeType =='month'">
+					AND DATE_FORMAT(b.b_datetime,'%Y-%m')=DATE_FORMAT(NOW(),'%Y-%m')
+				</if>
+				<if test="pd.timeType =='season'">
+					AND QUARTER(b.b_datetime)=QUARTER(NOW())
+				</if>
+				<if test="pd.timeType =='week'">
+					AND WEEKOFYEAR(b.b_datetime) = WEEKOFYEAR(NOW())
+				</if>
+				<if test="pd.startTime !=null and pd.startTime !=''">	
+					<![CDATA[
+					and b.b_datetime>=#{pd.startTime}
+					]]>
+				</if>
+				<if test="pd.endTime !=null and pd.endTime !=''">	
+					<![CDATA[
+					and b.b_datetime<=#{pd.endTime}
+					]]>
+				</if>
+		)noblood
+	</select>
+	
+	<!-- 体重数据记录 -->
+	<select id="weighlistPage" parameterType="Page" resultMap="weighMap" useCache="false">
+		SELECT DISTINCT(DATE_FORMAT(w_datetime,'%Y-%m-%d %H:%i')) AS w_date,w_weight,w_fat,user_id 
+		FROM u_weighing
+			WHERE 1 = 1 
+				<if test="pd.uuid !=null and pd.uuid !=''">
+					AND user_id = #{pd.uuid}
+				</if>
+				<if test="pd.timeType =='month'">
+					AND DATE_FORMAT(w_datetime,'%Y-%m')=DATE_FORMAT(NOW(),'%Y-%m')
+				</if>
+				<if test="pd.timeType =='season'">
+					AND QUARTER(w_datetime)=QUARTER(NOW())
+				</if>
+				<if test="pd.timeType =='week'">
+					AND WEEKOFYEAR(w_datetime) = WEEKOFYEAR(NOW())
+				</if>
+				<if test="pd.startTime !=null and pd.startTime !=''">	
+					<![CDATA[
+					and w_datetime>=#{pd.startTime}
+					]]>
+				</if>
+				<if test="pd.endTime !=null and pd.endTime !=''">	
+					<![CDATA[
+					and w_datetime<=#{pd.endTime}
+					]]>
+				</if>
+				order by w_datetime
+	</select>
+	
+	<!-- 异常体重数据记录 -->
+	<select id="unweighlistPage" parameterType="Page" resultMap="weighMap" useCache="false">
+		SELECT DISTINCT(DATE_FORMAT(w.w_datetime,'%Y-%m-%d %H:%i')) AS w_date,w.w_weight,w.w_fat,w.w_bmi,w.w_operate,w.remark,u.user_namezs,w.user_id,w.weighing_id 
+		FROM u_weighing w
+		LEFT JOIN sys_user_info u ON u.uuid = w.user_id
+			WHERE 1 = 1
+			<![CDATA[
+				AND (w.w_bmi<18.5 OR w.w_bmi >24)
+			]]>
+			<if test="pd.weighingId !=null and pd.weighingId !=''">
+				AND w.weighing_id = #{pd.weighingId}
+			</if>
+			<if test="pd.uuid !=null and pd.uuid !=''">
+				AND w.user_id = #{pd.uuid}
+			</if>
+			<if test="pd.timeType =='month'">
+				AND DATE_FORMAT(w.w_datetime,'%Y-%m')=DATE_FORMAT(NOW(),'%Y-%m')
+			</if>
+			<if test="pd.timeType =='season'">
+				AND QUARTER(w.w_datetime)=QUARTER(NOW())
+			</if>
+			<if test="pd.timeType =='week'">
+				AND WEEKOFYEAR(w.w_datetime) = WEEKOFYEAR(NOW())
+			</if>
+			<if test="pd.startTime !=null and pd.startTime !=''">	
+				<![CDATA[
+				and w.w_datetime>=#{pd.startTime}
+				]]>
+			</if>
+			<if test="pd.endTime !=null and pd.endTime !=''">	
+				<![CDATA[
+				and w.w_datetime<=#{pd.endTime}
+				]]>
+			</if>
+			order by w.w_datetime
+	</select>
+	
+	<!-- 胎心数据记录 -->
+	<select id="outPatientlistPage" parameterType="page" resultMap="outPatientMap" useCache="false">
+		SELECT DATE_FORMAT(h_datetime,'%Y-%m-%d %H:%i') AS o_date,h_heartrate o_heart FROM u_heartesting
+		WHERE 1 = 1
+			AND user_id = #{pd.uuid}
+			<if test="pd.timeType =='month'">
+				AND DATE_FORMAT(h_datetime,'%Y-%m')=DATE_FORMAT(NOW(),'%Y-%m')
+			</if>
+			<if test="pd.timeType =='season'">
+				AND QUARTER(h_datetime)=QUARTER(NOW())
+			</if>
+			<if test="pd.timeType =='week'">
+				AND WEEKOFYEAR(h_datetime) = WEEKOFYEAR(NOW())
+			</if>
+			<if test="pd.startTime !=null and pd.startTime !=''">	
+				<![CDATA[
+				AND h_datetime>=#{pd.startTime}
+				]]>
+			</if>
+			<if test="pd.endTime !=null and pd.endTime !=''">	
+				<![CDATA[
+				AND h_datetime<=#{pd.endTime}
+				]]>
+			</if>
+			ORDER BY h_datetime
+	</select>
+	
+	<!-- 异常胎心数据记录 -->
+	<select id="unoutPatientlistPage" parameterType="page" resultMap="outPatientMap" useCache="false">
+		SELECT DATE_FORMAT(h.h_datetime,'%Y-%m-%d %H:%i') AS o_date,h.h_heartrate o_heart,h.id,h.user_id,h.h_operate,h.remark,u.user_namezs
+		FROM u_heartesting h
+		LEFT JOIN sys_user_info u ON u.uuid = h.user_id
+		WHERE 1 = 1
+			<![CDATA[
+			AND (h.h_heartrate<120 OR h.h_heartrate>160)
+			]]>
+			<if test="pd.id != null and pd.id !=''">
+				AND h.id = #{pd.id}
+			</if>
+			<if test="pd.uuid != null and pd.uuid !=''">
+				AND h.user_id = #{pd.uuid}
+			</if>
+			<if test="pd.timeType =='month'">
+				AND DATE_FORMAT(h.h_datetime,'%Y-%m')=DATE_FORMAT(NOW(),'%Y-%m')
+			</if>
+			<if test="pd.timeType =='season'">
+				AND QUARTER(h.h_datetime)=QUARTER(NOW())
+			</if>
+			<if test="pd.timeType =='week'">
+				AND WEEKOFYEAR(h.h_datetime) = WEEKOFYEAR(NOW())
+			</if>
+			<if test="pd.startTime !=null and pd.startTime !=''">	
+				<![CDATA[
+				AND h.h_datetime>=#{pd.startTime}
+				]]>
+			</if>
+			<if test="pd.endTime !=null and pd.endTime !=''">	
+				<![CDATA[
+				AND h.h_datetime<=#{pd.endTime}
+				]]>
+			</if>
+			ORDER BY h.h_datetime
+	</select>
+	
+	<!-- 异常血压确认 -->
+	<update id="bloodEdit" parameterType="pd" flushCache="false">
+		update u_bloodmeter
+		set 
+		b_operate =1
+		where bloodmeter_id =#{bloodmeterId}
+	</update>
+	
+	<!-- 异常血压确认 -->
+	<update id="weightEdit" parameterType="pd" flushCache="false">
+		update u_weighing
+		set 
+		w_operate =1
+		where weighing_id =#{weighingId}
+	</update>
+	
+	<!-- 异常血压确认 -->
+	<update id="heartEdit" parameterType="pd" flushCache="false">
+		update u_heartesting
+		set 
+		h_operate =1
+		where id =#{id}
+	</update>
+</mapper>

@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="UserInfoMapper">
+
+	<cache type="org.mybatis.caches.ehcache.LoggingEhcache" />
+
+	<!-- 查询所有患者信息 -->
+	<select id="userInfolistPage" parameterType="page" resultType="pd" useCache="false">
+
+		SELECT
+		a.uuid,
+		a.user_namezs,
+		a.u_birthday,
+		a.u_sex,
+		a.u_age,
+		a.u_height,
+		a.u_papertype,
+		a.u_papernum,
+		a.u_address,
+		a.u_photo,
+		a.u_duedate,
+		a.u_preg_all,
+		a.u_preg_zr,
+		a.u_preg_pf,
+		a.u_past,
+		a.u_family,
+		a.u_person,
+		a.hospital_id,
+		a.doctor_id,
+		b.phone,
+		b.`status`,
+		DATE_FORMAT(b.createtime,'%Y-%m-%d') as createtime,
+		TIMESTAMPDIFF(YEAR,a.u_birthday,now()) AS age
+		FROM sys_user_info AS a
+		left JOIN sys_user AS b ON b.USER_ID=a.uuid
+		left JOIN med_follow AS medf ON a.uuid=medf.user_id
+		LEFT JOIN u_outpatient AS uout ON a.uuid = uout.user_id
+		LEFT JOIN hospitalized AS hospital ON a.uuid=hospital.user_id
+		WHERE 1=1 
+		
+		<if test="pd.roleId !=null and pd.roleId=='0f4b78de80714543ab0abed0a2f31b01' ">
+		AND(medf.doctor_id=#{pd.userid} OR uout.doctor_id=#{pd.userid} OR hospital.doctor_id=#{pd.userid})
+		</if>	
+			
+		<if test="pd.status1 != null and pd.status1 != ''">
+			and b.status=#{pd.status1}
+		</if>
+		
+		<if test="pd.useName !=null and pd.useName !=''">
+			and a.user_namezs like concat(concat('%',#{pd.useName},'%'))
+		</if>
+		
+		<if test="pd.uTelphone !=null and pd.uTelphone!=''">
+			and b.phone like concat(concat('%',#{pd.uTelphone},'%'))
+		</if>
+		
+		<if test="pd.conDt !=null and pd.conDt !='' and pd.conDts !=null and pd.conDts !=''">	
+			<![CDATA[
+			and a.u_birthday>#{pd.conDt} and a.u_birthday<#{pd.conDts}
+			]]>
+		</if>
+		<if test="pd.startMonth!=null">
+			<![CDATA[
+				AND DATEDIFF( u_duedate,NOW())>0
+				AND FLOOR((280 - DATEDIFF(a.u_duedate,NOW()))/28) >=#{pd.startMonth}
+				AND FLOOR((280 - DATEDIFF(a.u_duedate,NOW()))/28) <#{pd.endMonth}
+			]]>
+		</if>
+		<if test="pd.pastName!=null">
+			AND a.u_past LIKE CONCAT('%',#{pd.pastName},'%')
+		</if>
+		<if test="pd.familyName!=null">
+			AND a.u_family LIKE CONCAT('%',#{pd.familyName},'%')
+		</if>
+		group BY b.USER_ID
+		ORDER BY b.createtime DESC
+	</select>
+	
+	<!-- 根据Id查询患者信息 -->
+	<select id="findUserInfoId" parameterType="pd" resultType="pd" useCache="false">
+
+		select
+		uuid,
+		user_namezs,
+		u_birthday,
+		u_sex,
+		u_age,
+		u_height,
+		u_papertype,
+		u_papernum,
+		u_address,
+		u_photo,
+		u_duedate,
+		u_preg_all,
+		u_preg_zr,
+		u_preg_pf,
+		u_past,
+		u_family,
+		u_person,
+		b.phone,
+		a.doctor_id,
+		a.hospital_id,
+		c.hospitalname,
+		q.doctor_name
+		from
+		sys_user_info a
+		left join sys_user b on a.uuid=b.user_id
+		left join d_hospitalinfo as c on a.hospital_id=c.id
+    	left join doctor_info as q on a.doctor_id=q.doctor_id
+		where a.uuid=#{uuid}
+		
+	</select>
+
+	<!-- 添加患者信息 -->
+	<insert id="userInfoAdd" parameterType="pd" flushCache="false">
+		insert
+		into sys_user_info(
+		uuid,
+		user_namezs,
+		u_birthday,
+		u_sex,
+		u_age,
+		u_height,
+		u_papertype,
+		u_papernum,
+		u_address,
+		u_photo,
+		u_duedate,
+		u_preg_all,
+		u_preg_zr,
+		u_preg_pf,
+		u_past,
+		u_family,
+		u_person,
+		doctor_id,
+		hospital_id
+		)
+		values(
+		#{uuid}, #{user_namezs}, #{u_birthday}, #{u_sex}, #{u_age}, #{u_height}, #{u_papertype}, #{u_papernum}, #{u_address}, #{u_photo}, #{u_duedate}, #{u_preg_all},
+		#{u_preg_zr}, #{u_preg_pf}, #{u_past}, #{u_family}, #{u_person},#{doctor_id},#{hospital_id}
+		)
+	</insert>
+	
+	<!-- Excel导入-->
+	<insert id="saveUserExel" parameterType="pd" flushCache="false">
+		insert
+		into sys_user_info(
+		uuid,
+		user_namezs,
+		u_birthday,
+		u_sex,
+		u_address
+		)
+		values(
+		#{uuid}, #{user_namezs}, #{u_birthday}, #{u_sex},#{u_address}
+		)
+	</insert>
+	
+	<!-- 删除患者信息 -->
+	<delete id="userInfoDel" parameterType="pd" flushCache="false">
+		delete from sys_user_info
+		where 
+			uuid = #{uuid}
+	</delete>
+
+	<!-- 批量删除患者信息 -->
+	<delete id="userInfoDelAll" parameterType="String" flushCache="false">
+		delete from sys_user_info
+		where 
+			uuid in
+  			 <foreach item="item" index="index" collection="array" open="(" separator="," close=")">
+                  #{item}
+             </foreach>
+	</delete>
+	
+	<!-- 修改患者信息 -->
+	<update id="userInfoUpdate" parameterType="pd" flushCache="false">
+		update  sys_user_info
+			set 	
+				user_namezs =	#{user_namezs},
+				u_birthday	=	#{u_birthday},
+				u_sex		=	#{u_sex},
+				u_age		=	#{u_age},
+				u_height	=	#{u_height},
+				u_papertype =	#{u_papertype},
+				u_papernum	=	#{u_papernum},
+				u_address	=	#{u_address},
+				u_photo		=	#{u_photo},
+				u_duedate	=	#{u_duedate},
+				u_preg_all	=	#{u_preg_all},
+				u_preg_zr	=	#{u_preg_zr},
+				u_preg_pf	=	#{u_preg_pf},
+				u_past		=	#{u_past},
+				u_family	=	#{u_family},
+				u_person	=	#{u_person},
+				doctor_id	=	#{doctor_id},
+				hospital_id	=	#{hospital_id}
+			where 
+				uuid = #{uuid}
+	</update>
+
+	<!-- 修改状态 -->
+	<update id="updStatus" parameterType="pd" flushCache="false">
+		update  sys_user
+		set status = #{status}
+			where 
+				USER_ID = #{uuid}
+	</update>
+	
+	<!-- 修改 用户信息  用户表-->
+	<update id="updUser" parameterType="pd" flushCache="false">
+		update  SYS_USER
+			set
+				NAME 					= #{NAME},
+				PHONE					= #{PHONE}
+			where 
+				USER_ID = #{uuid}
+	</update>
+	
+	<!-- 删除图片 -->
+	<update id="updTxiang" parameterType="pd" flushCache="false">
+		update  sys_user_info
+		set u_photo = ''
+			where 
+				uuid = #{uuid}
+	</update>
+	
+	<!-- 微信  修改头像 -->
+	<update id="updWeiXinPhonto" parameterType="pd" flushCache="false">
+		update  sys_user_info
+		set u_photo = #{u_photo}
+			where 
+				uuid = #{uuid}
+	</update>
+
+	<!-- 新增用户 -->
+	<insert id="saveUser" parameterType="pd" flushCache="false">
+		insert into SYS_USER (
+			USER_ID,
+			USERNAME,
+			PASSWORD,
+			NAME,
+			ROLE_ID,
+			STATUS,
+			PHONE
+		) values (
+			#{USER_ID},
+			#{USERNAME},
+			#{PASSWORD},
+			#{NAME},
+			#{ROLE_ID},
+			#{STATUS},
+			#{PHONE}
+		)
+	</insert>
+	
+</mapper>

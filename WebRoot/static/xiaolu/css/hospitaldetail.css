@@ -1,0 +1,76 @@
+*{ font-size:14px; color:#595959; font-family:"宋体";}
+.clearfix{ clear:both;}
+dd,dl,ul,li{ margin:0; padding:0; list-style:none;}
+h1{ font-size:16px; font-weight:bold; padding:0; margin:0;}
+a{ text-decoration:none;}
+input{ outline:none; margin:0; padding:0;}
+/*导航*/
+
+.table li{ float:left; width:120px; line-height:24px; font-size:12Px; color:#4f99c6; text-align:center; border:1px #4f99c6 solid;}
+.table li a{ color:#4f99c6;}
+.table .l_yuanjiao{ border-radius:5px 0px 0px 5px;}
+.table .r_yuanjiao{ border-radius:0px 5px 5px 0px; }
+.table .this{ background-color:#4f99c6; color:#ffffff;}
+.table .this a{color:#ffffff;}
+.table .no_border{ border-right:none;}
+.table li:hover{ background-color:#4f99c6; color:#ffffff;}
+.table li:hover a{ color:#ffffff;}
+.table .current{ background-color:#4f99c6; color:#ffffff;}
+/*内容*/
+.yygl_yyxx_big_box{ border:1px #dedede solid; padding-top:40px; padding-bottom:20px;padding-left:20px; margin-top:20px;}
+.yygl_yyxx_left_box{ float:left;}
+.yygl_yyxx_left_box input{ width:358px; height:30px; margin-bottom:40px;}
+.yiyuanjianjie li{ margin-bottom:10px;}
+.yiyuanjianjie textarea{ width:430px; height:211px; outline:none;}
+.yygl_yyxx_right_box{ margin-left:100px; float:left;}
+.yygl_yyxx_right_box li{ float:left;}
+.yygl_yyxx_right_box input{ width:358px; height:30px; margin-bottom:40px;}
+.yygl_yyxx_right_box .shangchuan{ border:none; height:32px; width:30px; background-color:#e7e7e7; background-image:url(imgs/shangchuan.png); background-repeat:no-repeat; background-position:center; margin-left:2px;}
+.yygl_yyxx_right_box .shangchuan:hover{background-image:url(imgs/yygl_yyxx_shangchuan.png); background-repeat:no-repeat; background-position:center;}
+.yiyuantupian{ border:1px solid #dedede; width:464px; height:464px;}
+.yiyuantupian img{ display:block; margin:auto; margin-top:192px;}
+
+/*医院导航*/
+
+/*医院导航图*/
+.big_box{ border:1px  solid #dedede; width:1698px; padding:30px 50px; margin-top:20px;}
+.center_box ul{ float:left;}
+.yuanneidaohang_box{ margin-left:100px;}
+.yuanwaidaohang{ border:1px #dedede solid; width:470px; height:470px; margin-top:20px; float:left;}
+.yuanneidaohang{ border:1px #dedede solid; width:470px; height:470px; margin-top:20px; margin-right:503px;}
+.yuanwaidaohang{ position:relative;}
+.yuanwaidaohang img{ position:absolute; left:35%; top:40%;}
+.yuanneidaohang{ position:relative;}
+.yuanneidaohang img{ position:absolute; left:35%; top:40%;}
+.text1{ margin-right:872px;}
+.chengcheluxian{ margin-top:50px; margin-bottom:50px;}
+.chengcheluxian h1{ margin-bottom:20px;}
+
+/*住院须知*/
+.yygl_yyxz_big_box{ border:1px #dedede solid; margin-top:20px; padding-top:20px; padding-left:20px; padding-bottom:40px;}
+.yygl_yyxz_big_box h1{ background-image:url(../imgs/neirong16px.png); background-repeat:no-repeat; padding-left:22px; margin-left:10px; margin-top:20px;}
+.yygl_yyxz_big_box textarea{ width:690px; height:300px; margin-top:10px; margin-bottom:30px;
+ outline:none;}
+ /*保存返回*/
+.but1{
+	border:none;
+	color:#ffffff;
+	width:42px;
+	height:30px;
+	background-color:#D15B47;
+	text-shadow:0px -1px 0px #a74939;
+	cursor:pointer;
+	font-size:12px;
+	}
+.but1:hover{ background-image:url(../imgs/bg_shanchu.png); background-repeat:no-repeat; background-position:center;}
+.but2{
+	background-color:#428bca;
+	color:#ffffff;
+	border:none;
+	width:42px;
+	height:30px;
+	text-shadow:0px -1px 0px #356fa2;
+	cursor:pointer;
+	font-size:12px;
+	}
+.but2:hover{ background-image:url(../imgs/bg_baocun.png); background-repeat:no-repeat; background-position:center;}

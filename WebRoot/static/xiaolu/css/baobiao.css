@@ -1,0 +1,37 @@
+@charset "utf-8";
+*{ font-size:14px; color:#595959; font-family:"宋体";}
+ul,li{ list-style:none; margin:0; padding:0;}
+h1{padding:0; margin:0;}
+input{ margin:0; padding:0; border:none;}
+.clearfix{clear:both;}
+/*选择*/
+.xuanze_box li{ float:left;}
+.xuanze_box .chose{width:97px;padding-left:10px; margin-right:10px;}
+
+.big_box { width:1662px; }
+.big_box h1{ font-size:24px; font-weight:bold; text-align:center; padding-top:20px; padding-bottom:20px;}
+
+.big_box_continue { width:3324px; }
+.big_box_continue h1{ font-size:24px; font-weight:bold; text-align:center; padding-top:20px; padding-bottom:20px;}
+
+/*表格*/
+.biaoge{ clear:both; width:1662px; border: 1px solid #dedede; text-align:center;}
+.biaoge .td_left{ width:100px;}
+.biaoge .td_spacing{letter-spacing:8px;}
+.biaoge td{ border: 1px solid #000000; width:50px; height:42px;}
+
+/*续表*/
+.biaoge_continue{ clear:both; width:3324px; border: 1px solid #000000; text-align:center;}
+.biaoge_continue .td_left{min-width:100px;}
+.biaoge_continue .td_spacing{letter-spacing:8px;}
+.biaoge_continue td{ border: 1px solid #000000; width:50px; height:42px;}
+
+
+/* 导入： */
+.but2{width:60px;line-height:30px; border:none; color:#e7e7e7; outline:none;cursor:pointer;text-align:center; background-color:#6fb3e0;background-image:url(../../img/daoru.png);background-repeat:no-repeat;background-position:center; margin-left:10px;}
+.but2:hover{background-image:url(../../img/daoru-hover.png); background-repeat:no-repeat; background-position:center;}
+
+
+/* 打印 */
+.but{width:60px; line-height:30px; margin-left:10px; border:none; color:#e7e7e7; outline:none;cursor:pointer;text-align:center; background-color:#6fb3e0;background-image:url(../../img/dayin.png);background-repeat:no-repeat;background-position:center;}
+.but:hover{background-image:url(../../img/dayin-hover.png); background-repeat:no-repeat; background-position:center;}

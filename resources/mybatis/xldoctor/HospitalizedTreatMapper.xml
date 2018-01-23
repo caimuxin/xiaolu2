@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="hospitalizedTreatMapper">
+
+
+	<!-- 添加住院治疗信息 -->
+	<insert id="hospitalizedTreatAdd" parameterType="pd" flushCache="false">
+		INSERT INTO HOSPITALIZED_TREAT (H_ID, H_TYPE, OUT_DIAGNOSE, IN_STATE, OUT_STATE, EFFECT, D_ADVICE, ATTACHMENT) 
+		VALUES 							(#{h_id},#{h_type}, #{out_diagnose}, #{in_state}, #{out_state}, #{effect}, #{d_advice}, #{attachment})
+	</insert>
+	
+	<!-- 删除住院治疗信息 -->
+	<delete id="hospitalizedTreatDel" parameterType="pd" flushCache="false">
+		DELETE FROM HOSPITALIZED_TREAT
+		WHERE 
+			H_ID = #{h_id}
+	</delete>
+
+	<!-- 修改住院治疗信息 -->
+	<update id="hospitalizedTreatUpd" parameterType="pd" flushCache="false">
+		UPDATE  HOSPITALIZED_TREAT
+		SET 	
+		H_TYPE					 =	#{h_type},
+		OUT_DIAGNOSE			 =	#{out_diagnose},
+		IN_STATE				 =	#{in_state},
+		OUT_STATE				 =	#{out_state},
+		EFFECT					 =	#{effect},
+		D_ADVICE				 =	#{d_advice},
+		ATTACHMENT				 =	#{attachment}
+			WHERE 
+				H_ID = #{h_id}
+	</update>
+	
+	<!-- 删除住院治疗图片 -->
+	<update id="attachmentDel" parameterType="pd" flushCache="false">
+		UPDATE  HOSPITALIZED_TREAT
+		SET 	
+		ATTACHMENT				 =''
+			WHERE 
+				H_ID = #{h_id}
+	</update>
+</mapper>

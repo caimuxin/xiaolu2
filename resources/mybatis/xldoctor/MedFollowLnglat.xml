@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="MedFollowLnglat">
+	
+	
+	<insert id="addLnglat" parameterType="pd" flushCache="false">
+		INSERT INTO med_follow_lnglat (
+		  f_id,
+		  doctor_id,
+		  f_lng,
+		  f_lat,
+		  f_address,
+		  f_date
+		) 
+		VALUES
+		  (
+		    #{fId},
+		    #{doctorId},
+		    #{fLng},
+		    #{fLat},
+		    #{fAddress},
+		    #{fDate}
+		  ) ;
+	</insert>
+	
+	<resultMap type="pd" id="LnglatMap">
+		<result column="f_id" property="id"/>
+		<result column="f_lng" property="lng"/>
+		<result column="f_lat" property="lat"/>
+		<result column="f_address" property="address"/>
+		<result column="f_date" property="time"/>
+	</resultMap>
+	
+	<!-- 查询随访轨迹点记录 -->
+	<select id="medFollowLnglat" parameterType="pd" resultMap="LnglatMap" useCache="false">
+		SELECT 
+		  l.f_id,
+		  l.f_lng,
+		  l.f_lat,
+		  l.f_address,
+		  l.f_date,
+		  m.doctor_id
+		FROM
+		  med_follow_lnglat l
+		  LEFT JOIN med_follow m ON l.f_id = m.f_id
+		WHERE 1 = 1
+			AND m.doctor_id = #{doctor_id}
+		<if test="followDate!=null and followDate!=''">
+			AND DATE_FORMAT(l.f_date,'%Y-%m-%d') =DATE_FORMAT(#{followDate},'%Y-%m-%d')
+		</if>
+		ORDER BY f_date
+	</select>
+	
+	<!-- 根据医生查询有轨迹点的患者 -->
+	<select id="findUserByDoctor" parameterType="pd" resultMap="LnglatMap" useCache="false">
+		SELECT  DISTINCT(l.f_id) f_id,l.doctor_id,f.user_id,u.user_namezs
+		FROM med_follow_lnglat l
+		LEFT JOIN med_follow f ON l.f_id = f.f_id
+		LEFT JOIN sys_user_info u ON f.user_id = u.uuid
+		WHERE 1 = 1 
+		AND l.doctor_id = #{doctor_id}
+		AND DATE_FORMAT(l.f_date,'%Y-%m-%d') = DATE_FORMAT(#{searchDate},'%Y-%m-%d')
+		AND l.f_id IS NOT NULL
+		AND f.user_id IS NOT NULL
+	</select>
+	
+	<!-- 查询随访轨迹点记录app -->
+	<select id="medFollowLnglatApp" parameterType="pd" resultMap="LnglatMap" useCache="false">
+		SELECT 
+		  l.f_id,
+		  l.f_lng,
+		  l.f_lat,
+		  l.f_address,
+		  l.f_date
+		FROM
+		  med_follow_lnglat l
+		WHERE 1 = 1
+			AND l.f_id = #{fId}
+		<if test="followDate!=null and followDate!=''">
+			AND DATE_FORMAT(l.f_date,'%Y-%m-%d') =DATE_FORMAT(#{followDate},'%Y-%m-%d')
+		</if>
+		ORDER BY f_date
+	</select>
+	
+	<!-- 随访评价表添加 -->
+	<insert id="addEvaluate" parameterType="pd" flushCache="false">
+		INSERT INTO med_follow_evaluate (
+		  f_id,
+		  e_evaluate,
+		  e_details,
+		  e_date
+		) 
+		VALUES
+		  (
+		    #{fId},
+		    #{eEvaluate},
+		    #{eDetails},
+		    #{eDate}
+		  ) ;
+
+	</insert>
+	
+	<resultMap type="pd" id="evaluateMap">
+		<result column="f_id" property="fId"/>
+		<result column="e_evaluate" property="eEvaluate"/>
+		<result column="e_details" property="eDetails"/>
+		<result column="e_date" property="eDate"/>
+	</resultMap>
+	
+	<!-- 查询随访评价记录 -->
+	<select id="medFollowEvaluate" parameterType="pd" resultMap="evaluateMap" useCache="false">
+		SELECT 
+		  id,
+		  f_id,
+		  e_evaluate,
+		  e_details,
+		  e_date 
+		FROM
+		  med_follow_evaluate 
+		<if test="eDate!=null and eDate!=''">
+			AND DATE_FORMAT(l.f_date,'%Y-%m-%d') =DATE_FORMAT(#{followDate},'%Y-%m-%d')
+		</if>
+		ORDER BY f_date
+	</select>
+	
+	<resultMap type="pd" id="followDMap">
+		<result column="f_id" property="fId"/>
+		<result column="user_id" property="userId"/>
+		<result column="f_type" property="fType"/>
+		<result column="f_date" property="fDate"/>
+		<result column="doctor_id" property="doctorId"/>
+		<result column="doctor_name" property="doctorName"/>
+		<result column="hospital_name" property="hospitalName"/>
+		<result column="have_finished" property="haveFinished"/>
+		<result column="doctor_position" property="doctorPosition"/>
+		<result column="u_photo" property="uPhoto"/>
+		<result column="e_evaluate" property="eEvaluate"/>
+		<result column="e_details" property="eDetails"/>
+	</resultMap>
+	<!-- 查询产后随访记录 -->
+	<select id="medFollowD" parameterType="pd" resultMap="followDMap" useCache="false">
+		SELECT f.f_id,f.user_id,f.f_type,f.f_date,f.doctor_id,f.doctor_name,f.hospital_name,d.doctor_position,d.doctor_photo AS u_photo
+				,IF(e.f_id IS NULL,0,1) have_finished,e.e_evaluate,e.e_details
+		FROM med_follow f
+		LEFT JOIN doctor_info d ON d.doctor_id=f.doctor_id
+		LEFT JOIN sys_user_info u ON u.uuid = f.user_id	 
+		LEFT JOIN med_follow_evaluate e ON e.f_id = f.f_id
+		WHERE 1 = 1
+		AND f.f_type = 'd_42'
+		<if test="haveFinished!=null and haveFinished!=''">
+			AND f.have_finished = 1
+		</if>
+		<if test="userId!=null and userId!=''">
+			AND f.user_id = #{userId}
+		</if>
+		ORDER BY f_date
+	</select>
+	<!-- 轨迹握手更新 -->
+	<update id="updateLnglat" parameterType="pd" flushCache="false">
+		UPDATE 
+  			med_follow_lnglat
+		<set>
+		  <if test="fId!=null and fId!=''">
+		  	f_id = #{fId}
+		  </if>
+		</set>
+		WHERE 
+		doctor_id = #{doctorId}
+		and f_id is null
+	</update>
+	
+	<!-- 轨迹握手更新随访主表状态 -->
+	<update id="updateFollowDF" parameterType="pd" flushCache="false">
+		UPDATE 
+  			med_follow
+		SET
+		  have_finished = #{haveFinished}
+		  
+		WHERE 
+		f_type = 'd_42'
+		and f_id  = #{fId}
+	</update>
+	
+</mapper>

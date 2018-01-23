@@ -1,0 +1,1 @@
+yes,xl,watermark.png,xl,1,xl,1

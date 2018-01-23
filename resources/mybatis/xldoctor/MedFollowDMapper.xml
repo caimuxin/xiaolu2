@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="MedFollowDMapper">
+
+	<cache type="org.mybatis.caches.ehcache.LoggingEhcache" />
+
+	<!-- 添加产后随访记录 -->
+	<insert id="medFollowDAdd" parameterType="pd" flushCache="false">
+		INSERT INTO MED_FOLLOW_D
+		(
+			F_ID,
+			D_WEIGHT,
+			D_BLOOD,
+			D_HEALTH,
+			D_PSYCHIC,
+			D_UBER,
+			D_LYMA,
+			D_WOMB,
+			D_WOUND,
+			D_EDUCATION
+		)
+		VALUES(
+		#{f_id}, #{d_weight}, #{d_blood},#{d_health},#{d_psychic},#{d_uber}, #{d_lyma}, #{d_womb}, #{d_wound},#{d_education}
+		)
+	</insert>
+	
+	<!-- 删除产后随访记录 -->
+	<delete id="medFollowDDel" parameterType="pd" flushCache="false">
+		DELETE f,d FROM med_follow f 
+		INNER JOIN med_follow_d d ON f.f_id= d.f_id
+		WHERE f.f_id = #{f_id}
+	</delete>
+
+	<!-- 修改产后随访记录-->
+	<update id="medFollowDUpd" parameterType="pd" flushCache="false">
+		UPDATE  MED_FOLLOW_D
+		SET 	
+			D_WEIGHT			=#{d_weight},
+			D_BLOOD				=#{d_blood},
+			D_HEALTH			=#{d_health},
+			D_PSYCHIC			=#{d_psychic},
+			D_UBER				=#{d_uber},
+			D_LYMA				=#{d_lyma},
+			D_WOMB				=#{d_womb},
+			D_WOUND				=#{d_wound},
+			D_EDUCATION			=#{d_education}
+		WHERE
+				F_ID		=#{f_id}
+	</update>
+
+</mapper>

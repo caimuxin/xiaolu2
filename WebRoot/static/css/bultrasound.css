@@ -1,0 +1,43 @@
+*{ font-size:12Px;}
+body,ul,li{ margin:0; padding:0;}
+li{ list-style:none;}
+.clearfix{ clear:both;}
+a{text-decoration:none;}
+/*table*/
+.big_box{ }
+.table li{ float:left; width:120px; line-height:24px; font-size:12Px; color:#4f99c6; text-align:center; border:1px #4f99c6 solid;}
+.table li a{ color:#4f99c6;}
+.table .l_yuanjiao{ border-radius:5px 0px 0px 5px;}
+.table .r_yuanjiao{ border-radius:0px 5px 5px 0px; }
+.table .this{ background-color:#4f99c6; color:#ffffff;}
+.table .this a{color:#ffffff;}
+.table .no_border{ border-right:none;}
+.table li:hover{ background-color:#4f99c6; color:#ffffff;}
+.table li:hover a{ color:#ffffff;}
+.table .current{ background-color:#4f99c6; color:#ffffff;}
+/*选择科室*/
+.yizhou{ 
+ background-color:#ffffff; margin-top:50px; }
+.xuanze{ float:left; margin-left:15px; margin-right:15px; margin-top:12px; margin-bottom:12px;}
+.xuanze li{ float:left; line-height:20px;}
+.xuanze select{ width:106px; height:26px;}
+.xuanze .Bchaoyishi{ width:100px;}
+.yizhou table{ text-align:center;}
+.time{ clear:both;}
+.time table{ float:left;}
+.tital td{ background-color:#4f99c6; color:#ffffff; font-size:16px; font-weight:bold;}
+.yizhou .tital span{ font-size:12px; font-weight:normal;}
+.tital .dangri{ background-color:#0b6cbc;}
+.yizhou .wu{ width:24px; height:1px; background-color:#dedede; margin-left:36px;}
+.yizhou .yueman{ background-color:#d9d9d9;}
+.yizhou table a{ color:red;} 
+.95hui{ background-color:#e5e5e5;}
+/*一周汇总*/
+.huizong{ margin-top:50px;}
+.huizong table{ text-align:center; float:left; }
+.huizong .dabiaoti{ color:#4f99c6; font-weight:bold; background-color:#dedede;}
+.huizong .dabiaoti span{ font-size:16px; }
+.huizong .xiaobiaoti td{ background-color:#4f99c6; color:#ffffff; font-size:16px; font-weight:bold;}
+.huizong .zongji{ color:#0b6cbc; font-weight:bold;}
+.huizong .day{ margin-left:60px;}
+.day a{ color:red;}

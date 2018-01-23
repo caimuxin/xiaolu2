@@ -1,0 +1,55 @@
+*{ font-size:14px;font-family:"宋体";}
+ul,li{ list-style:none; margin:0; padding:0;}
+.clearfix{ clear:both;}
+/*选择*/
+.big_box{ }
+.xuanze_box{  float:left;}
+.xuanze_box ul{ padding-bottom:30px;}
+.xuanze_box li{ float:left; line-height:32px;}
+.xuanze_box select{ width:360px; height:36px; outline:none;}
+.xuanze_box input{ width:356px; height:30px; line-height:12px; outline:none;}
+.xuanze_box2{ float:left; margin-left:100px;}
+.xuanze_box2 .search{ width:58px; height:30px; border:none; color:#6fb3e0; outline:none; cursor:pointer;}
+.xuanze_box2 ul{ padding-bottom:35px;}
+.xuanze_box2 li{ float:left;  line-height:32px;}
+.xuanze_box2 .float_r{ float:right; }
+/*表格*/
+.big_box2{  clear:both; width:1693px;}
+.big_box2 ul{ float:right; margin-top:20px; margin-bottom:10px;}
+.but1{
+	border:none;
+	color:#ffffff;
+	width:42px;
+	height:30px;
+	background-color:#D15B47;
+	text-shadow:0px -1px 0px #a74939;
+	cursor:pointer;
+	}
+.but2{
+	background-color:#428bca;
+	color:#ffffff;
+	border:none;
+	width:42px;
+	height:30px;
+	text-shadow:0px -1px 0px #356fa2;
+	cursor:pointer;
+	}
+	
+	
+	
+	
+.biaoge{  clear:both; width:1693px;}
+.tital td{color:#ffffff; width:132px; height:42px;  border-left:1px solid #dedede; border-top:1px solid #dedede; border-bottom:1px solid #dedede; background-color:#4f99c6;text-align:center; font-size:16px; font-weight:bold; }
+.tital .border_r{ border-right:1px #dedede solid;}
+.tital .gouxuan{ width:46px;}
+.tital .wzbiaoti{ width:914px; text-align:left; padding-left:5px;}
+.tital .zuozhe{ width:224px; text-align:left; padding-left:5px;}
+.tital .time{width:224px; text-align:left; padding-left:5px; }
+
+.shuju td{ width:132px; height:38px;  border-left:1px solid #dedede; border-bottom:1px solid #dedede; text-align:center;}
+.shuju .border_r{ border-right:1px #dedede solid;}
+.shuju .gouxuan{ width:46px;}
+.shuju .wzbiaoti{ width:914px; text-align:left; padding-left:5px;}
+.shuju .zuozhe{ width:224px; text-align:left; padding-left:5px;}
+.shuju .time{width:224px; text-align:left; padding-left:5px; }
+.bgcolor95{ background-color:#f2f2f2;}

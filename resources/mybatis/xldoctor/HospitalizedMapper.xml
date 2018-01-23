@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="HospitalizedMapper">
+
+	<cache type="org.mybatis.caches.ehcache.LoggingEhcache" />
+
+	<!-- 查询所有住院信息 -->
+	<select id="hospitalizedlistPage" parameterType="page" resultType="pd" useCache="false">
+
+	<!-- 	SELECT
+		H_ID,
+		USER_ID,
+		H_IN_DATE,
+		H_OUT_DATE,
+		H_TYPE,
+		HOSPITAL_ID,
+		HOSPITAL_NAME,
+		DOCTOR_ID,
+		DOCTOR_NAME
+		FROM
+		HOSPITALIZED
+		WHERE 1=1 -->
+		
+		SELECT
+		A.H_ID,
+		A.USER_ID,
+		A.H_IN_DATE,
+		A.H_OUT_DATE,
+		A.H_TYPE,
+		A.HOSPITAL_ID,
+		A.HOSPITAL_NAME,
+		A.DOCTOR_ID,
+		A.DOCTOR_NAME,
+		B.HOSPITALNAME,
+		C.DOCTOR_NAME AS DOCTORNAME,
+		T.ATTACHMENT AS PHOTOT,
+		D.ATTACHMENT AS PHOTOD
+		FROM HOSPITALIZED A
+		LEFT JOIN D_HOSPITALINFO B ON A.HOSPITAL_ID=B.ID 
+		LEFT JOIN DOCTOR_INFO C ON A.DOCTOR_ID=C.DOCTOR_ID 
+		LEFT JOIN HOSPITALIZED_TREAT AS T ON A.H_ID=T.H_ID
+		LEFT JOIN HOSPITALIZED_DELIVER AS D ON A.H_ID=D.H_ID
+		WHERE 1=1
+
+		<if test="pd.h_type !=null and  pd.h_type !=''">
+			AND A.H_TYPE=#{pd.h_type}
+		</if>
+		
+		<if test="pd.doctor_name !=null and pd.doctor_name!=''">
+			AND A.DOCTOR_NAME LIKE CONCAT(CONCAT('%',#{pd.doctor_name},'%'))
+		</if>
+		
+		<if test="pd.conDt !=null and pd.conDt !='' and pd.conDts !=null and pd.conDts !=''">	
+			<![CDATA[
+			and A.H_IN_DATE>#{pd.conDt} and H_OUT_DATE<#{pd.conDts}
+			]]>
+		</if>
+		
+		<if test="pd.uuid !=null and  pd.uuid !=''">
+			AND A.USER_ID=#{pd.uuid}
+		</if>
+		
+	</select>
+	
+	<!-- 根据Id查询住院信息  左外连接住院治疗表-->
+	<select id="findHospitalizedId" parameterType="pd" resultType="pd" useCache="false">
+		SELECT
+			A.H_ID,
+			A.USER_ID,
+			A.H_IN_DATE,
+			A.H_OUT_DATE,
+			A.H_TYPE,
+			A.HOSPITAL_ID,
+			A.HOSPITAL_NAME,
+			A.DOCTOR_ID,
+			A.DOCTOR_NAME,
+			B.OUT_DIAGNOSE,
+			B.IN_STATE,
+			B.EFFECT,
+			B.D_ADVICE,
+			B.ATTACHMENT
+		FROM
+		HOSPITALIZED  A LEFT JOIN HOSPITALIZED_TREAT  B ON A.H_ID=B.H_ID
+		WHERE A.H_ID=#{h_id}
+
+	</select>
+	
+	<!-- 根据Id查询住院信息  左外连接住院分娩表-->
+	<select id="findHdId" parameterType="pd" resultType="pd" useCache="false">
+		SELECT
+			A.H_ID,
+			A.USER_ID,
+			A.H_IN_DATE,
+			A.H_OUT_DATE,
+			A.H_TYPE,
+			A.HOSPITAL_ID,
+			A.HOSPITAL_NAME,
+			A.DOCTOR_ID,
+			A.DOCTOR_NAME,
+			B.D_DATETIME,
+			B.D_WEEK,
+			B.D_ALLTIME,
+			B.D_STYLES,
+			B.M_COMPLICATION,
+			B.B_SEX,
+			B.B_WEIGHT,
+			B.B_HEIGHT,
+			B.B_NUMBER,
+			B.B_COMPLICATION,
+			B.ATTACHMENT
+			FROM
+		HOSPITALIZED  A LEFT JOIN HOSPITALIZED_DELIVER  B ON A.H_ID=B.H_ID
+		WHERE A.H_ID=#{h_id}
+	</select>
+
+	<!-- 添加住院信息 -->
+	<insert id="hospitalizedAdd" parameterType="pd" flushCache="false">
+		INSERT INTO HOSPITALIZED
+		(
+		H_ID,
+		USER_ID,
+		H_IN_DATE,
+		H_OUT_DATE,
+		H_TYPE,
+		HOSPITAL_ID,
+		HOSPITAL_NAME,
+		DOCTOR_ID,
+		DOCTOR_NAME
+		)
+		VALUES(
+		#{h_id}, #{user_id}, #{h_in_date},#{h_out_date}, #{h_type}, #{hospital_id}, #{hospital_name}, #{doctor_id}, #{doctor_name}
+		)
+	</insert>
+	
+	<!-- 删除住院信息   住院治疗 -->
+	<delete id="hospitalizedDelt" parameterType="pd" flushCache="false">
+		delete m,t from hospitalized as m
+		inner join hospitalized_treat as t on m.h_id=t.h_id
+		where m.h_id = #{h_id}
+	</delete>
+	
+	<!-- 删除住院信息   住院分娩 -->
+	<delete id="hospitalizedDeld" parameterType="pd" flushCache="false">
+		delete m,d from hospitalized as m
+		inner join hospitalized_deliver as d on m.h_id=d.h_id
+		where m.h_id = #{h_id}
+	</delete>
+	
+	<!-- 修改患者信息 -->
+	<update id="hospitalizedUpd" parameterType="pd" flushCache="false">
+		UPDATE  HOSPITALIZED
+		SET 	
+		USER_ID				 =	#{user_id},
+		H_IN_DATE			 =	#{h_in_date},
+		H_OUT_DATE			 =	#{h_out_date},
+		H_TYPE				 =	#{h_type},
+		HOSPITAL_ID			 =	#{hospital_id},
+		HOSPITAL_NAME		 =	#{hospital_name},
+		DOCTOR_ID			 =	#{doctor_id},
+		DOCTOR_NAME			 =	#{doctor_name}
+			where 
+				H_ID = #{h_id}
+	</update>
+
+</mapper>

@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="OfficeMapper">
+	
+	<resultMap type="pd" id="officeResultMap">
+		<id column="Office_id" property="officeId"/>
+		<result column="Office_name" property="officeName"/>
+		<result column="officeurl" property="officeUrl"/>
+		<result column="P_office_id" property="officeParentId"/>
+		<result column="Office_grade" property="officeGrade"/>
+		<result column="officeorder" property="officeOrder"/>
+		<result column="O_Describe" property="officeDescrib"/>
+		<result column="O_user" property="officeUser"/>
+		<result column="hospitalname" property="hospitalName"/>
+		<result column="pofficeid" property="pOfficeId"/>
+		<result column="officeinfoid" property="officeInfoId"/>
+	</resultMap>
+	
+	<!-- 查找父级科室 -->
+	<select id="findAllParentOffice" parameterType="pd" resultMap = "officeResultMap">
+		SELECT Office_id,Office_name,officeurl,P_office_id,officeorder
+		FROM d_officeinfo
+		WHERE 1 = 1 
+			 <if test="officePId != null and officPId !=''">
+				  AND P_office_id != #{officePId}
+			 </if>
+			 <if test="type != null and type !=''">
+				  AND type = #{type}
+			 </if>
+			 order by officeorder
+	</select>
+	
+	<!-- 查找科室信息 产检预约树查询-->
+	<select id="findAllOffice" parameterType="pd"  resultMap = "officeResultMap">
+		SELECT Office_id,Office_name,officeurl,P_office_id,officeorder,IF(p_office_id =0,'true','false') AS open
+		FROM d_officeinfo
+		WHERE 1 = 1 
+			<if test="officePId != null and officPId !=''">
+				  AND P_office_id = #{officePId}
+			 </if>
+			<if test="hospitalId != null and hospitalId !=''">
+				AND Hospital_id = #{hospitalId}
+			</if>
+			<if test="type != null and type !=''">
+			 	AND type = #{type}
+			 </if>
+			 order by officeorder
+	</select>
+	
+	<!-- 查找科室信息 科室管理树查询-->
+	<select id="findOfficeAndHospital" parameterType="pd"  resultMap = "officeResultMap">
+		SELECT h.id,h.hospitalname,o.id as officeinfoid,o.Office_id,o.Office_name,o.officeurl,o.P_office_id,o.P_office_id as pofficeid,o.officeorder
+		FROM d_hospitalinfo h
+		LEFT JOIN  d_officeinfo o ON h.id = o.hospital_id
+		WHERE 1 = 1  
+			<if test="officePId != null and officPId !=''">
+				  AND o.P_office_id = #{officePId}
+			 </if>
+			<if test="hospitalId != null and hospitalId !=''">
+				AND h.id= #{hospitalId}
+			</if>
+			<if test="type != null and type !=''">
+			 	AND o.type = #{type}
+			 </if>
+			 order by officeorder
+	</select>
+	
+	<!-- 根据父级id查找子科室 -->
+	<select id="subOfficeByParentId" parameterType="String" resultMap = "officeResultMap">
+		SELECT Office_id,Office_name,officeurl,P_office_id,Office_grade,officeorder,O_Describe
+		FROM d_officeinfo
+		WHERE 1 = 1 
+			 AND P_office_id = #{officeParentId}
+			 order by officeorder
+	</select>
+	
+	<resultMap type="pd" id="officeInitMap">
+		<id column="office_id" property="officeId"/>
+		<result column="office_name" property="officeName"/>
+		<result column="o_graden" property="oGradeN"/>
+		<result column="o_gradev" property="oGradeV"/>
+		<result column="type" property="type"/>
+	</resultMap>
+	<!-- 基础功能 科室信息列表 -->
+	<select id="officeInitlistPage" parameterType="pd"  resultMap = "officeInitMap">
+		SELECT office_id,office_name,o_graden,o_gradev
+		FROM office_init
+		WHERE 1 = 1
+				and o_gradev != 0
+			<if test="pd.officeName !=null and pd.officeName !=''">
+				and office_name LIKE CONCAT('%',#{pd.officeName},'%') 
+			</if>
+			<if test="pd.oGradeN !=null and pd.oGradeN !=''">
+				and o_graden LIKE CONCAT('%',#{pd.oGradeN},'%') 
+			</if>
+		order by office_id
+	</select>
+	
+	<!-- 通过officeInitName获取数据 -->
+	<select id="findOfficeInit" parameterType="pd" resultMap="officeInitMap" useCache="false">
+		SELECT 
+				office_id,office_name,o_graden,o_gradev,type
+		FROM 	office_init
+		WHERE 	1 = 1
+				<if test="officeName !=null and officeName !=''">
+					and office_name = #{officeName}
+				</if>
+				<if test="officeId !=null and officeId !=''">
+					and office_id = #{officeId}
+				</if>
+	</select>
+	
+	<!-- 修改 -->
+	<update id="editOfficeInit" parameterType = "pd" flushCache="false">
+		update office_init
+			set office_name =#{officeName},
+				o_graden =#{oGradeN},
+				o_gradev = #{oGradeV},
+				type = #{oType}
+		where office_id =#{officeId}
+	</update>
+	
+	<!-- 删除 -->
+	<delete id="deleteOfficeInit" parameterType="pd" flushCache="false">
+		delete from office_init
+		where 
+			office_id =#{officeId}
+   </delete>
+	
+	<!-- 新增officeInit -->
+	<insert id="officeInitAdd" parameterType="pd" flushCache="false">
+		INSERT INTO office_init(
+					office_name,o_graden,o_gradev,type
+					)
+		VALUES(
+					#{officeName},#{oGradeN},#{oGradeV},#{oType}
+			   )
+	</insert>
+	
+	<resultMap type="pd" id="hospitalMap">
+		<id column="id" property="hospitalId"/>
+		<result column="hospitalname" property="hospitalName"/>
+	</resultMap>
+	<!-- 查找所有医院 科室管理所属医院-->
+	<select id="findAllHospital" parameterType= "pd" resultMap = "hospitalMap">
+		SELECT id,hospitalname 
+		FROM d_hospitalinfo
+		WHERE 1 = 1
+		order by id
+	</select>
+	
+	<resultMap type="pd" id="officeTempletMap">
+		<result column="o_tem_id" property="templetId"/>
+		<result column="o_tem_name" property="templetName"/>
+		<result column="office_id" property="officeId"/>
+		<result column="p_office_id" property="pOfficeId"/>
+		<result column="o_gradev" property="oGradeV"/>
+		<result column="office_name" property="officeName"/>
+		<result column="o_graden" property="oGradeN"/>
+		<result column="type" property="type"/>
+	</resultMap>
+	<!-- 查询科室模板 名称科室管理下拉框-->
+	<select id="findOfficeTempletName" parameterType = "pd" resultMap = "officeTempletMap">
+		SELECT o_tem_name FROM office_templet
+		GROUP BY  o_tem_name
+	</select>
+	<!-- 查询科室模板 名称 信息初始化模板-->
+	<select id="findTempletNamelistPage" parameterType = "pd" resultMap = "officeTempletMap">
+		SELECT o_tem_name FROM office_templet
+		GROUP BY  o_tem_name
+	</select>
+	<!-- 查询模板信息 -->
+	<select id="findTempletTree" parameterType = "pd" resultMap = "officeTempletMap">
+		SELECT t.o_tem_id,t.o_tem_name,t.office_id,t.p_office_id,t.o_gradev,o.office_name,o.o_graden,o.type
+		FROM office_templet t
+		LEFT JOIN office_init o ON t.office_id = o.office_id
+		where 1 = 1
+		<if test="templetName != null and templetName !=''">
+			AND t.o_tem_name = #{templetName}
+		</if>
+	</select>
+	
+	<!-- 科室模板 基础树,科室管理科室模板点击使用 -->
+	<select id="findBaseTree" parameterType = "pd" resultMap = "officeTempletMap">
+		SELECT office_id,office_name,o_graden,o_gradev,o_gradev as p_office_id 
+		FROM office_init
+		WHERE office_id NOT IN (
+							SELECT office_id 
+							FROM office_templet 
+							WHERE 1=1
+								<if test="templetName !=null and templetName !=''">
+									and o_tem_name = #{templetName}
+								</if>
+							)
+	</select>
+	
+	<!-- 科室管理 科室编辑 基础树查询 -->
+	<select id="findBaseTreeForOM" parameterType = "pd" resultMap = "officeTempletMap">
+		SELECT office_id,office_name,o_graden,o_gradev,o_gradev AS p_office_id,type
+		FROM office_init
+		WHERE office_id NOT IN (
+							SELECT office_id FROM d_officeinfo 
+							WHERE 1 = 1
+							AND 
+							<if test="hospitalId !=null and hospitalId !=''">
+								hospital_id = #{hospitalId}
+							</if>
+							)
+	</select>
+	
+	<!-- 新增模板树节点 -->
+	<insert id="saveTemplet">
+		INSERT INTO office_templet (o_tem_name,office_id,p_office_id,o_gradev)
+		VALUES
+		<foreach collection="list" item="item" separator=",">
+			(
+				#{item.templetName},
+				#{item.officeId},
+				#{item.pOfficeId},
+				#{item.oGradeV}
+			)	 
+		</foreach>   
+	</insert>
+	
+	<!-- 删除模板树节点 -->
+	<delete id="deleteOfficeTemplet">
+		DELETE FROM office_templet
+		WHERE 
+		o_tem_id IN(
+			<foreach collection="list" item="item" separator=",">
+			#{item.templetId}
+			</foreach>
+		)
+	</delete>
+	
+	<!-- 新增officeInfo节点 -->
+	<insert id="saveOfficeInfo">
+		INSERT INTO d_officeinfo (office_id,hospital_id,office_name,p_office_id,office_grade,type)
+		VALUES
+		<foreach collection="list" item="item" separator=",">
+			(
+				#{item.officeId},
+				#{item.hospitalId},
+				#{item.officeName},
+				#{item.pOfficeId},
+				#{item.oGradeV},
+				#{item.type}
+			)	 
+		</foreach>   
+	</insert>
+	
+	<!-- 删除officeInfo节点 -->
+	<delete id="deleteOfficeInfo">
+		DELETE FROM d_officeinfo
+		WHERE 
+		id IN(
+			<foreach collection="list" item="item" separator=",">
+			#{item.officeInfoId}
+			</foreach>
+		)
+	</delete>
+	
+	<!-- 根据医院id查找科室 -->
+	<select id="findOfficeOption" parameterType="pd" resultMap = "officeResultMap">
+		SELECT Office_id,Office_name
+		FROM d_officeinfo
+		WHERE 1 = 1 
+			 AND Hospital_id = #{hospitalId}
+			 <if test="type != null and type !=''">
+			 AND type = #{type}
+			 </if>
+			 order by officeorder
+	</select>
+	
+	<!-- 根据医院id查找科室 android-->
+	<select id="findOfficeByHospitalId" parameterType="pd" resultMap = "officeResultMap">
+		SELECT Office_id,Office_name,P_office_id
+		FROM d_officeinfo
+		WHERE 1 = 1 
+			 AND Hospital_id = #{hospitalId}
+			 <if test="type != null and type !=''">
+			 AND type = #{type}
+			 </if>
+			 order by officeorder
+	</select>
+	
+</mapper>

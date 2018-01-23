@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="VersionsMapper">
+
+	<cache type="org.mybatis.caches.ehcache.LoggingEhcache"/>
+
+	<resultMap type="pd" id="versionMap">
+		<result column="version_code" property="versionCode"/>
+		<result column="version_low" property="versionLow"/>
+		<result column="version_high" property="versionHigh"/>
+		<result column="apk_url" property="apkUrl"/>
+		<result column="describe" property="describe"/>
+		<result column="app_name" property="appName"/>
+		<result column="create_time" property="createTime"/>
+	</resultMap>
+	<!-- 版本号 -->
+	<select id="findVersion" parameterType = "pd" resultMap="versionMap">
+		SELECT xl.version_code,xl.version_low,xl.version_high,xl.apk_url,xl.describe,xl.app_name,DATE_FORMAT(xl.create_time,'%Y-%m-%d') create_time
+		FROM xl_versions xl
+		WHERE 1 = 1
+			AND xl.STATUS = 1
+			AND xl.create_time = (SELECT MAX(create_time) FROM xl_versions WHERE app_id = #{appId} AND STATUS =1)
+			AND app_id = #{appId}
+	</select>
+	
+	<!-- 历史版本号 -->
+	<select id="findVersionHi" parameterType = "pd" resultMap="versionMap">
+		SELECT xl.version_code,xl.version_low,xl.version_high,xl.apk_url,xl.describe,xl.app_name,DATE_FORMAT(xl.create_time,'%Y-%m-%d') create_time
+		FROM xl_versions xl
+		WHERE 1 = 1
+		AND STATUS = 1
+		AND xl.app_id = #{appId}
+		ORDER BY xl.create_time DESC
+	</select>
+	
+
+	
+</mapper>

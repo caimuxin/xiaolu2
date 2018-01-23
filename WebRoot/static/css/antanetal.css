@@ -1,0 +1,46 @@
+*{ font-size:12Px; color:#595959;}
+body,ul,li{ margin:0; padding:0;}
+li{ list-style:none;}
+.clearfix{ clear:both;}
+a{ text-decoration:none;}
+/*table*/
+.big_box{ }
+.table li{ float:left; width:120px; line-height:24px; font-size:12Px; color:#4f99c6; text-align:center; border:1px #4f99c6 solid;}
+.table li a{ color:#4f99c6;}
+.table .l_yuanjiao{ border-radius:5px 0px 0px 5px;}
+.table .r_yuanjiao{ border-radius:0px 5px 5px 0px; }
+.table .this{ background-color:#4f99c6; color:#ffffff;}
+.table .this a{color:#ffffff;}
+.table .no_border{ border-right:none;}
+.table li:hover{ background-color:#4f99c6; color:#ffffff;}
+.table li:hover a{ color:#ffffff;}
+.table .current{ background-color:#4f99c6; color:#ffffff;}
+/*center_box*/
+.center_box{  margin-top:20px;}
+/*搜索*/
+.search{padding-bottom:20px; width:274px; float:right;}
+.search input{ float:left; margin:0; padding:0; outline-style:none;}
+.search .yishi{ line-height:12px; height:30px; width:233px; list-style:none; vertical-align:middle; border:1px solid #dedede; color:#999999;  padding-left:5px;}
+.search .sousuo{ width:32px; height:32px; list-style:none; border:none; vertical-align:middle; margin-left:2px; cursor:pointer;}
+/*表格*/
+.biaoge{  width:1288px;}
+.biaoge .tital{ background-color:#4f99c6;text-align:center;}
+.biaoge .tital td{ color:#ffffff; width:119px; border-left:1px solid #dedede; border-right:none; border-top:1px solid #dedede; border-bottom:1px solid #dedede; height:42px;}
+.biaoge .tital .border_r{ border-right:1px solid #dedede;}
+.biaoge .tital .shiduan_tital{ width:308px;}
+.biaoge .tital span{ color:#ffffff; font-size:16px; font-weight:bold;}
+.biaoge .biaoge_r{ width:1288px; clear:both;}
+/*表格2*/
+.biaoge2{}
+.biaoge2 table{ float:left; text-align:center;}
+.yishiming{ text-align:center; border-left:1px #dedede solid; border-top:none; border-right:none; border-bottom:1px #dedede solid;}
+.biaoge2 .yishiming span{ font-size:16px; font-weight:bold;}
+.biaoge2 .shiduan td{ font-size:16px; font-weight:bold;}
+.biaoge2 .shiduan{ border-top:none; border-left:1px solid #dedede; border-right:none; border-bottom:none;}
+.biaoge2 .shiduan td{ border-bottom: 1px solid #dedede;}
+.shuju td{ border-right:none; border-left:1px solid #dedede; border-bottom:1px solid #dedede; width:119px; height:39px;}
+.shuju .border_r{ border-right:1px solid #dedede;}
+.bgcolor95{ background-color:#f2f2f2;}
+.shuju .shijian{ width:186px;}
+.shijian td{ width:186px; height:39px; border-right:none; border-left:1px solid #dedede; border-bottom:1px solid #dedede;}
+.wu{ width:62px; height:2px; background-color:#dedede; margin-left:29px;}

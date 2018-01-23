@@ -1,0 +1,563 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="ReportMapper">
+
+	<!-- 婚前保健情况年报表 -->
+	<select id="findPremaritalHealthlistPage" parameterType = "page" resultType="pd">
+		select * from r_premarital_health where 1 = 1 
+		<if test="pd.date != null and pd.date != ''">
+			and YEAR(createtime) = YEAR(#{pd.date})
+		</if>
+		order by createtime desc
+	</select>
+	
+	<!-- 新生儿疾病筛查情况报表 -->
+	<select id="findNewbornExaminationlistPage"  parameterType="page" resultType="pd">
+		select * from r_newborn_examination where 1 = 1 
+		<if test="pd.type != null and pd.type !=''">
+			and type = #{pd.type}
+		</if>
+		<if test="pd.date != null and pd.type == 'm'.toString() and pd.date != ''">
+			and YEAR(createtime) = YEAR(#{pd.date}) and MONTH(createtime) = MONTH(#{pd.date})
+		</if>
+		<if test="pd.date != null and pd.type == 'y'.toString() and pd.date != ''">
+			and YEAR(createtime) = YEAR(#{pd.date})
+		</if>
+		order by createtime desc
+	</select>
+	
+	<!-- 产前筛查情况报表 -->
+	<select id="findPrenatalExaminationlistPage" parameterType="page" resultType="pd">
+		select * from r_prenatal_examination where 1 = 1 
+		<if test="pd.type != null and pd.type !=''">
+			and type = #{pd.type}
+		</if>
+		<if test="pd.date != null and pd.type == 'm'.toString() and pd.date != ''">
+			and YEAR(createtime) = YEAR(#{pd.date}) and MONTH(createtime) = MONTH(#{pd.date})
+		</if>
+		<if test="pd.date != null and pd.type == 'y'.toString() and pd.date != ''">
+			and YEAR(createtime) = YEAR(#{pd.date})
+		</if>
+		order by createtime desc
+	</select>
+	
+	<!-- 产前诊断情况年报表 -->
+	<select id="findPrenatalDisgnosislistPage" parameterType="page" resultType="pd">
+		select * from r_prenatal_disgnosis where 1 = 1 
+		<if test="pd.date != null and pd.date != ''">
+			and YEAR(createtime) = YEAR(#{pd.date})
+		</if>
+		order by createtime desc
+	</select>
+	
+	<!-- 孕产妇保健和健康情况年报表c -->
+	<select id="findPregnantHealthlistPage" parameterType = "pd" resultType="pd">
+		SELECT *, DATE_FORMAT(reporttime, '%Y-%m-%d') reporttimestr
+		FROM r_pregnant_health 
+		where 1 = 1
+		<if test="pd.searchDate!=null and pd.searchDate!=''">
+			<![CDATA[
+				AND DATE_FORMAT(reporttime, '%Y') =#{pd.searchDate}
+			]]>
+		</if>
+		ORDER BY reporttime DESC
+	</select>
+	
+	<!-- 妇女常见病筛查情况年报表c -->
+	<select id="findGynecologicalDiseaselistPage" parameterType = "pd" resultType="pd">
+		SELECT *, DATE_FORMAT(reporttime, '%Y-%m-%d') reporttimestr
+		FROM r_gynecological_disease 
+		WHERE 1 = 1
+		<if test="pd.searchDate!=null and pd.searchDate!=''">
+			<![CDATA[
+				AND DATE_FORMAT(reporttime, '%Y') =#{pd.searchDate}
+			]]>
+		</if>
+		ORDER BY reporttime DESC
+	</select>
+	
+	<!-- 计划生育技术服务数量和质量情况年报表c -->
+	<select id="findBirthServeQualitylistPage" parameterType = "pd" resultType = "pd">
+		SELECT *, DATE_FORMAT(reporttime, '%Y-%m-%d') reporttimestr
+		FROM r_birth_servequality 
+		WHERE 1 = 1
+		<if test="pd.searchDate!=null and pd.searchDate!=''">
+			<![CDATA[
+				AND DATE_FORMAT(reporttime, '%Y') =#{pd.searchDate}
+			]]>
+		</if>
+		ORDER BY reporttime DESC
+	</select>
+	
+	<!-- 中期引产情况年报表c -->
+	<select id="findMidtermInducedlistPage" parameterType = "pd" resultType = "pd">
+		SELECT *, DATE_FORMAT(reporttime, '%Y-%m-%d') reporttimestr
+		FROM r_midterminduced 
+		WHERE 1 = 1
+		<if test="pd.searchDate!=null and pd.searchDate!=''">
+			<![CDATA[
+				AND DATE_FORMAT(reporttime, '%Y') =#{pd.searchDate}
+			]]>
+		</if>
+		ORDER BY reporttime DESC
+	</select>
+	
+	<!-- 计划生育咨询随访服务情况表c -->
+	<select id="findBirthConsultlistPage" parameterType = "pd" resultType = "pd">
+		SELECT *, DATE_FORMAT(reporttime, '%Y-%m-%d') reporttimestr
+		FROM r_birth_consult 
+		WHERE 1 = 1
+		<if test="pd.searchDate!=null and pd.searchDate!=''">
+			<![CDATA[
+				AND DATE_FORMAT(reporttime, '%Y') =#{pd.searchDate}
+			]]>
+		</if>
+		ORDER BY reporttime DESC
+	</select>
+	
+	<!-- 基层妇幼保健基本情况年报表c -->
+	<select id="findWomenChildrenHealthlistPage" parameterType = "pd" resultType = "pd">
+		SELECT *, DATE_FORMAT(reporttime, '%Y-%m-%d') reporttimestr
+		FROM r_womenchildren_health 
+		WHERE 1 = 1
+		<if test="pd.searchDate!=null and pd.searchDate!=''">
+			<![CDATA[
+				AND DATE_FORMAT(reporttime, '%Y') =#{pd.searchDate}
+			]]>
+		</if>
+		ORDER BY reporttime DESC
+	</select>
+	
+	<!-- 七岁以下儿童保健和健康情况年报表c -->
+	<select id="findChildrenHealthlistPage" parameterType = "pd" resultType = "pd">
+		SELECT *, DATE_FORMAT(reporttime, '%Y-%m-%d') reporttimestr
+		FROM r_children_health 
+		WHERE 1 = 1
+		<if test="pd.searchDate!=null and pd.searchDate!=''">
+			<![CDATA[
+				AND DATE_FORMAT(reporttime, '%Y') =#{pd.searchDate}
+			]]>
+		</if>
+		ORDER BY reporttime DESC
+	</select>
+	
+	<!-- 儿童与孕产妇健康状况年报表c -->
+	<select id="findChildPregnantHealthYlistPage" parameterType = "pd" resultType = "pd">
+		SELECT *, DATE_FORMAT(reporttime, '%Y-%m-%d') reporttimestr
+		FROM r_childpregnant_healthyear 
+		WHERE 1 = 1
+		<if test="pd.searchDate!=null and pd.searchDate!=''">
+			<![CDATA[
+				AND DATE_FORMAT(reporttime, '%Y') =#{pd.searchDate}
+			]]>
+		</if>
+		ORDER BY reporttime DESC
+	</select>
+	
+	<!-- 儿童与孕产妇健康状况月报表c -->
+	<select id="findChildPregnantHealthMlistPage" parameterType = "pd" resultType = "pd">
+		SELECT *, DATE_FORMAT(reporttime, '%Y-%m-%d') reporttimestr
+		FROM r_childpregnant_healthmonth 
+		WHERE 1 = 1
+		<if test="pd.searchDate!=null and pd.searchDate!=''">
+			<![CDATA[
+				AND DATE_FORMAT(reporttime, '%Y-%m') =#{pd.searchDate}
+			]]>
+		</if>
+		ORDER BY reporttime DESC
+	</select>
+	
+	<!-- 出生缺陷发生情况年报表 -->
+	<select id="flawyearlistPage" parameterType="page" resultType="pd" useCache="false">
+	
+	SELECT
+	*,date_format(bfcreationtime, '%Y-%m-%d') as creationtime
+	FROM
+	r_pregnant_flawyear
+	where 1=1
+	
+	<if test="pd.conDt !=null and pd.conDt !=''">	
+			<![CDATA[
+			and date_format(bfcreationtime, '%Y') =#{pd.conDt}
+			]]>
+	</if>
+	
+	order by bfcreationtime desc
+	</select>
+		
+	
+	
+	<!-- 出生缺陷发生情况月报表 -->
+	<select id="flawmonthlistPage" parameterType="page" resultType="pd" useCache="false">
+	select
+	*,date_format(fmcreationtime,'%Y-%m-%d') as fmcreatetime
+	from r_pregnant_flawmonth
+	where 1=1
+	<if test="pd.conDt !=null and pd.conDt !=''">	
+			<![CDATA[
+			and date_format(fmcreationtime, '%Y-%m') =#{pd.conDt}
+			]]>
+	</if>
+	order by fmcreationtime desc
+	</select>
+	
+	
+	
+	
+	<!-- 接产机构分娩情况年表 -->
+	<select id="childbirthyearlistPage" parameterType="page" resultType="pd" useCache="false">
+	select
+	*,date_format(cycreationtime,'%Y-%m-%d') as cycreatetime
+	from r_pregnant_childbirthyear
+	where 1=1
+	<if test="pd.conDt !=null and pd.conDt !=''">	
+			<![CDATA[
+			and date_format(cycreationtime, '%Y') =#{pd.conDt}
+			]]>
+	</if>
+	order by cycreationtime desc
+	</select>
+	
+	
+	
+	<!-- 接产机构分娩情况月表 -->
+	<select id="childbirthmonthlistPage" parameterType="page" resultType="pd" useCache="false">
+	select
+	*,date_format(cmcreationtime,'%Y-%m-%d') as cmcreatetime
+	from r_pregnant_childbirthmonth
+	where 1=1
+	<if test="pd.conDt !=null and pd.conDt !=''">	
+			<![CDATA[
+			and date_format(cmcreationtime, '%Y-%m') =#{pd.conDt}
+			]]>
+	</if>
+	order by cmcreationtime desc
+	</select>
+	
+	
+	
+	
+	<!-- 婚前保健情况月报表 -->
+	<select id="premaritalmonthlistPage" parameterType="page" resultType="pd" useCache="false">
+	select
+	*,date_format(pmcreationtime,'%Y-%m-%d') as pmcreatetime
+	from r_pregnant_premaritalmonth 
+	where 1=1
+	<if test="pd.conDt !=null and pd.conDt !=''">	
+			<![CDATA[
+			and date_format(pmcreationtime, '%Y-%m') =#{pd.conDt}
+			]]>
+	</if>
+	order by pmcreationtime desc
+	</select>
+	
+	<!-- 病残儿和计划生育手术并发症分级鉴定情况表 -->
+	<select id="findComplicationEvaluationlistPage" parameterType="page" resultType="pd">
+		select * from r_complication_evaluation where 1 = 1 
+		<if test="pd.date != null and pd.date != ''">
+			and YEAR(createtime) = YEAR(#{pd.date})
+		</if>
+		order by createtime desc
+	</select>
+	
+	<!-- 幼托机构卫生保健管理情况年报表 -->
+	<select id="findPreschoolsManagementlistPage" parameterType="page" resultType="pd">
+		select * from r_preschools_management where 1 = 1 
+		<if test="pd.date != null and pd.date != ''">
+			and YEAR(createtime) = YEAR(#{pd.date})
+		</if>
+		order by createtime desc
+	</select>
+	
+	<!-- 新生儿疾病筛查、产前筛查、产前诊断开展机构情况年报表 -->
+	<select id="findInstitutionManagementlistPage" parameterType="page" resultType="pd">
+		select * from r_institution_management where 1 = 1 
+		<if test="pd.date != null and pd.date != ''">
+			and YEAR(createtime) = YEAR(#{pd.date})
+		</if>
+		order by createtime desc
+	</select>
+	
+	
+	<!--《出生医学证明》管理使用情况年度统计表 -->
+	<select id="proveyearlistPage" parameterType="page" resultType="pd" useCache="false">
+	select * from r_newborn_proveyear
+		<where>
+			<if test="pd.conDt !=null and pd.conDt !=''">	
+			<![CDATA[
+				date_format(creationtime, '%Y') =#{pd.conDt}
+			]]>
+			</if>
+		</where>
+		order by creationtime desc
+	</select>
+	
+	
+	<!-- 5岁以下儿童保健情况月报表 -->
+	<select id="healthmonthlistPage" parameterType="Page" resultType="pd" useCache="false">
+	select * from r_newborn_healthmonth
+		<where>
+			<if test="pd.conDt !=null and pd.conDt !=''">
+				<![CDATA[
+					date_format(creationtime,'%Y-%m') =#{pd.conDt}
+				]]>
+			</if>
+		</where>
+		order by creationtime desc
+	</select>
+
+	
+	<!-- 5岁以下儿童生命指标月报表 -->
+	<select id="lifemonthlistPage" parameterType="Page" resultType="pd" useCache="false">
+	select * from r_newborn_lifemonth
+		<where>
+			<if test="pd.conDt !=null and pd.conDt!=''">
+				<![CDATA[
+					date_format(creationtime,'%Y-%m') =#{pd.conDt}
+				]]>
+			</if>
+		</where>
+		order by creationtime desc
+	</select>
+
+	<!-- 新增婚前保健情况年报表数据 -->
+	<insert id="insertPremaritalHealth" parameterType="map" flushCache="false">
+		insert into r_premarital_health (city, registerman, registerwoman, consultationman,
+		consultationwoman, examinationman, examinationwoman, patientman,
+		patientwoman, infectiousman, infectiouswoman, stdman, stdwoman,
+		geneticman, geneticwoman, psychosisman, psychosiswoman,
+		reproductiveman, reproductivewoman, internalman, internawoman,
+		instructionman, instructionwoman, pregnancetotal,
+		thalassemiaexaminationman, thalassemiaexaminationwoman,
+		thalassemiapositiveman, thalassemiapositivewoman,
+		thalassemiapositivecouple, hivexaminationman, hivexaminationwoman,
+		hivinfectionman, hivinfectionwoman, syphilisexaminationman,
+		syphilisexaminationwoman, syphilisinfectionman,
+		syphilisinfectionwoman, hbsagexaminationman, hbsagexaminationwomen,
+		hbsagpositiveman, hbsagpositivewoman, gonorrhoeaexaminationman,
+		gonorrhoeaexaminationwoman, gonorrhoeapositiveman,
+		gonorrhoeapositivewoman, trichomonadexamination, trichomonadpositive,
+		mildewexamination, mildewpositive, creater, createtime)
+		values(#{p1}, #{p2}, #{p3}, #{p4}, #{p5}, #{p6}, #{p7}, #{p8}, #{p9}, #{p10},
+		#{p11}, #{p12}, #{p13}, #{p14}, #{p15}, #{p16}, #{p17}, #{p18},
+		#{p19}, #{p20}, #{p21}, #{p22}, #{p23}, #{p24}, #{p25}, #{p26},
+		#{p27}, #{p28}, #{p29}, #{p30}, #{p31}, #{p32}, #{p33}, #{p34},
+		#{p35}, #{p36}, #{p37}, #{p38}, #{p39}, #{p40}, #{p41}, #{p42},
+		#{p43}, #{p44}, #{p45}, #{p46}, #{p47}, #{p48}, #{p49}, #{creater},
+		#{createTime})
+	</insert>
+
+	<!-- 新增新生儿疾病筛查情况报表数据 -->
+	<insert id="insertNewbornExamination" parameterType="map" flushCache="false">
+		insert into r_newborn_examination (city, pkuexamination, pkupositive, pkudiagnosis,
+		classicalpkudiagnose, classicalpkucure, phenylalaninediagnose,
+		phenylalaninecure, hypothyroidismexamination, hypothyroidismpositive,
+		hypothyroidismdiagnosis, hypothyroidismdiagnose, hypothyroidismcure,
+		tshdiagnose, tshcure, g6pdexamination, g6pdpositive, hearpreliminary,
+		hearpreliminarypositive, hearreview, hearreviewpositive,
+		heardiagnosis, hearpositive, hearcure, creater, createtime, type)
+		values(#{p1}, #{p2}, #{p3}, #{p4}, #{p5}, #{p6}, #{p7}, #{p8}, #{p9},
+		#{p10}, #{p11}, #{p12}, #{p13}, #{p14}, #{p15}, #{p16}, #{p17},
+		#{p18}, #{p19}, #{p20}, #{p21}, #{p22}, #{p23}, #{p24}, #{creater},
+		#{createTime}, #{type})
+	</insert>
+
+	<!-- 新增产前诊断情况年报表数据 -->
+	<insert id="insertPrenatalDisgnosis" parameterType="map" flushCache="false">
+		insert into r_prenatal_disgnosis (city, labpregnancy, labpositive, chromosomeexamination,
+		trisomy21, trisomy18, trisomy13, otherchromosomeabnormality,
+		thalassemiaexamination, thalassemiapositive, bultrasoundexamination,
+		malformation, ntd, cardiovascularmalformation, othermalformation,
+		interventiontotal, trisomy21intervention, trisomy18intervention,
+		trisomy13intervention, otherchromosomeintervention,
+		moderatethalassemiaintervention, severethalassemiaintervention,
+		ntdintervention, heartmalformationintervention,
+		othermalformationintervention, creater, createtime)
+		values(#{p1}, #{p2}, #{p3}, #{p4}, #{p5}, #{p6}, #{p7}, #{p8}, #{p9}, #{p10},
+		#{p11}, #{p12}, #{p13}, #{p14}, #{p15}, #{p16}, #{p17}, #{p18},
+		#{p19}, #{p20}, #{p21}, #{p22}, #{p23}, #{p24}, #{p25}, #{creater},
+		#{createTime})
+	</insert>
+
+	<!-- 新增产前筛查情况报表数据 -->
+	<insert id="insertPrenatalExamination" parameterType="map" flushCache="false">
+		insert into r_prenatal_examination (city, total, highrisktotal, diagnosistotal, diagnosetotal,
+		trisomy21highrisk, trisomy21diagnosis, trisomy21diagnose,
+		trisomy18highrisk, trisomy18diagnosis, trisomy18diagnose,
+		trisomy13highrisk, trisomy13diagnosis, trisomy13diagnose, ntdhighrisk,
+		ntddiagnosis, ntddiagnose, creater, createtime, type)
+		values(#{p1}, #{p2}, #{p3}, #{p4}, #{p5}, #{p6}, #{p7}, #{p8}, #{p9}, #{p10},
+		#{p11}, #{p12}, #{p13}, #{p14}, #{p15}, #{p16}, #{p17}, #{creater},
+		#{createTime}, #{type})
+	</insert>
+
+	<!-- Excel导入《出生医学证明》管理使用情况年度统计表  数据-->
+	<insert id="proveyearAdd" parameterType="pd" flushCache="false">
+		 INSERT INTO r_newborn_proveyear 
+		 (counties, lastyearnum, thisyearnum, lastsign, thissign, `change`, reissue, signsubtotal, deliversign, elsesign, onsubtotal, wrong, losenum, 
+		 uncommon, abandonnum, provesum, thisyearstock, ivebirth, author, creationtime) 
+		 values(#{p1}, #{p2}, #{p3}, #{p4}, #{p5}, #{p6}, #{p7}, #{p8}, #{p9}, #{p10},
+		 #{p11}, #{p12}, #{p13}, #{p14}, #{p15}, #{p16}, #{p17}, #{p18},
+		 #{creater},#{createTime})
+	</insert>
+
+	<!--Excel导入 5岁以下儿童保健情况月报表 数据-->
+	<insert id="healthmonthAdd" parameterType="pd" flushCache="false">
+		INSERT INTO r_newborn_healthmonth 
+		(counties, underage, fstaturenum, fweightlt, fheightlt, fheightgt, fheightgts, fhemoglobinnum, fhemoglobinlt, fhemoglobinlts, staturenum,
+		weightlt, heightlt, heightgt, heightgts, hemoglobinnum, hemoglobinlt, hemoglobinlts, author, creationtime) 
+		 values(#{p1}, #{p2}, #{p3}, #{p4}, #{p5}, #{p6}, #{p7}, #{p8}, #{p9}, #{p10},
+		 #{p11}, #{p12}, #{p13}, #{p14}, #{p15}, #{p16}, #{p17}, #{p18},
+		 #{creater},#{createTime})
+	</insert>
+	
+	<!--Excel导入 5岁以下儿童生命指标月报表  数据-->
+	<insert id="lifemonthAdd" parameterType="pd" flushCache="false">
+		INSERT INTO r_newborn_lifemonth 
+		(counties, fivenextsum, fivenextboy, fivenextgirl, fivenextno, babysum, babyboy, babygirl, babyno, newbornsum, newbornboy, newborngirl, 
+		newbornno, ltlivebirth, ltweight, gtweight, stillbirthnum, indaynum, indayboy, indaygirl, indayno, tetanus, tetanusdie, author, creationtime) 
+		 values(#{p1}, #{p2}, #{p3}, #{p4}, #{p5}, #{p6}, #{p7}, #{p8}, #{p9}, #{p10},
+		#{p11}, #{p12}, #{p13}, #{p14}, #{p15}, #{p16}, #{p17}, #{p18},
+		#{p19}, #{p20}, #{p21}, #{p22}, #{p23},#{creater},#{createTime})
+	</insert>
+	
+	<!--Excel 导入 出生缺陷发生情况年报表 数据  -->
+	<insert id="flawyearAdd" parameterType="pd" flushCache="false">
+	
+		INSERT INTO r_pregnant_flawyear 
+		(bfcounties, bfsum, bfmunicipalityy, bfhospitalcity, bfhospitalcounty, bfhospitalvillage, bfwomendistrict, bfwomencity, bfwomencounty, 
+		bfdelivery, bfflawgtday, bfflawltday, bfmalformation, bfrachischisis, bfharns, bfponding, bfcleftpalate, bfharelip, bfcleftpalateharelip,
+		bfsyndrome, bfcardiopathy, bfedema, bfother, bfgtcure, bfltcure, bfantenatal, bfpostpartum, bflivebirth, bfdeadfetus, bfstillbirth, bfpostpartumday, bfauthor, bfcreationtime) 
+		values(#{p1}, #{p2}, #{p3}, #{p4}, #{p5}, #{p6}, #{p7}, #{p8}, #{p9}, #{p10},
+		#{p11}, #{p12}, #{p13}, #{p14}, #{p15}, #{p16}, #{p17}, #{p18},
+		#{p19}, #{p20}, #{p21}, #{p22}, #{p23}, #{p24}, #{p25}, #{p26},
+		#{p27}, #{p28}, #{p29}, #{p30}, #{p31},#{creater},
+		#{createTime})
+		
+	</insert>
+	
+	<!--Excel 导入 出生缺陷发生情况月报表 数据  -->
+	<insert id="flawmonthAdd" parameterType="pd" flushCache="false">
+		
+	INSERT INTO r_pregnant_flawmonth 
+	(fmcounties, fmdelivery, fmflawgtday, fmflawltday, fmmalformation, fmrachischisis, fmharns, fmponding, fmcleftpalate, fmharelip, fmcleftpalateharelip, fmsyndrome, 
+	fmcardiopathy, fmedema, fmother, fmgtcure, fmltcure, fmantenatal, fmpostpartum, fmlivebirth, fmdeadfetus, fmstillbirth, fmpostpartumday, fmauthor, fmcreationtime)
+	values(#{p1}, #{p2}, #{p3}, #{p4}, #{p5}, #{p6}, #{p7}, #{p8}, #{p9}, #{p10},
+	#{p11}, #{p12}, #{p13}, #{p14}, #{p15}, #{p16}, #{p17}, #{p18},
+	#{p19}, #{p20}, #{p21}, #{p22}, #{p23},#{creater},
+	#{createTime})
+
+	</insert>
+	
+	
+	<!--Excel 导入 接产机构分娩情况年表  数据-->
+	<insert id="childbirthyearAdd" parameterType="pd" flushCache="false">
+	
+	INSERT INTO r_pregnant_childbirthyear 
+	(cycounties, cychildbirthsum, cyhighrisk, cynature, cyvaginasum, cyfetalhead, cyhaunch, cyhiptraction, cyforceps, cyother, cycesareansum, cymedicine, cynomedicine, 
+	cylivebirthsum, cyboy, cygirl, cyunknown, cylivebirth, cystillbirths, cystillbirth, cyauthor, cycreationtime) 
+	values(#{p1}, #{p2}, #{p3}, #{p4}, #{p5}, #{p6}, #{p7}, #{p8}, #{p9}, #{p10},
+	#{p11}, #{p12}, #{p13}, #{p14}, #{p15}, #{p16}, #{p17}, #{p18},
+	#{p19}, #{p20},#{creater},
+	#{createTime})
+	
+	</insert>
+
+	<!--Excel 导入 接产机构分娩情况月表  数据-->
+	<insert id="childbirthmonthAdd" parameterType="pd" flushCache="false">
+	
+	INSERT INTO r_pregnant_childbirthmonth 
+	(cmcounties, cmchildbirthsum, cmhighrisk, cmnature, cmvaginasum, cmfetalhead, cmhaunch, cmhiptraction, cmforceps, cmother, cmcesareansum, cmmedicine, cmnomedicine, 
+	cmlivebirthsum, cmboy, cmgirl, cmunknown, cmlivebirth, cmstillbirths, cmstillbirth, cmauthor, cmcreationtime) 
+	values(#{p1}, #{p2}, #{p3}, #{p4}, #{p5}, #{p6}, #{p7}, #{p8}, #{p9}, #{p10},
+		#{p11}, #{p12}, #{p13}, #{p14}, #{p15}, #{p16}, #{p17}, #{p18},
+		#{p19}, #{p20},#{creater},
+		#{createTime})
+	</insert>
+	
+	<!-- 婚前保健情况月报表 -->
+	<insert id="premaritalmonthAdd" parameterType="pd" flushCache="false">
+	INSERT INTO r_pregnant_premaritalmonth (pmcity, pmregisterman, pmregisterwoman, pmconsultationman, pmconsultationwoman, pmexaminationman, pmexaminationwoman, pmpatientman,
+	 pmpatientwoman, pminfectiousman, pminfectiouswoman, pmstdman, pmstdwoman, pmgeneticman, pmgeneticwoman, pmpsychosisman, pmpsychosiswoman, pmreproductiveman, pmreproductivewoman,
+	  pminternalman, pminternawoman, pminstructionman, pminstructionwoman, pmpregnancetotal, pmthalassemiaexamineman, pmthalassemiaexaminewoman, pmthalassemiapositiveman, 
+	  pmthalassemiapositivewoman, pmthalassemiapositivecouple, pmhivexamineman, pmhivexaminewoman, pmhivinfectionman, pmhivinfectionwoman, pmsyphilisexamineman, 
+	  pmsyphilisexaminewoman, pmsyphilisinfectionman, pmsyphilisinfectionwoman, pmhbsagexamineman, pmhbsagexaminewomen, pmhbsagpositiveman, pmhbsagpositivewoman, 
+	  pmgonorrhoeaexamineman, pmgonorrhoeaexaminewoman, pmgonorrhoeapositiveman, pmgonorrhoeapositivewoman, pmtrichomonadexamine, pmtrichomonadpositive, pmmildewexamine, 
+	  pmmildewpositive, pmauthor, pmcreationtime) 
+	  values(#{p1}, #{p2}, #{p3}, #{p4}, #{p5}, #{p6}, #{p7}, #{p8}, #{p9}, #{p10},
+		#{p11}, #{p12}, #{p13}, #{p14}, #{p15}, #{p16}, #{p17}, #{p18},
+		#{p19}, #{p20}, #{p21}, #{p22}, #{p23}, #{p24}, #{p25}, #{p26},
+		#{p27}, #{p28}, #{p29}, #{p30}, #{p31}, #{p32}, #{p33}, #{p34},
+		#{p35}, #{p36}, #{p37}, #{p38}, #{p39}, #{p40}, #{p41}, #{p42},
+		#{p43}, #{p44}, #{p45}, #{p46}, #{p47}, #{p48}, #{p49}, #{creater},
+		#{createTime})
+	</insert>
+
+	<!-- 新增病残儿和计划生育手术并发症分级鉴定情况年报表数据 -->
+	<insert id="insertComplicationEvaluation" parameterType="map" flushCache="false">
+		insert into r_complication_evaluation (city, invalidismtotal, invalidism, geneticdisease,
+		hereditarydisease, accident, generable, prenataldisgnosis,
+		complicationtotal, stairtotal, stairfirstgrade, stairsecondgrade,
+		secondarytotal, secondaryfirstgrade, secondarysecondgrade,
+		secondarythirdgrade, secondaryfourthgrade, tertiarytotal,
+		tertiaryfirstgrade, tertiarysecondgrade, tertiarythirdgrade,
+		tertiaryfourthgrade, tertiaryfifthgrade, creater, createtime)
+		values(#{p1}, #{p2}, #{p3}, #{p4}, #{p5}, #{p6}, #{p7}, #{p8}, #{p9},
+		#{p10}, #{p11}, #{p12}, #{p13}, #{p14}, #{p15}, #{p16}, #{p17},
+		#{p18}, #{p19}, #{p20}, #{p21}, #{p22}, #{p23}, #{creater},
+		#{createTime})
+	</insert>
+
+	<!-- 新增幼托机构卫生保健管理情况年报表数据 -->
+	<insert id="insertPreschoolsManagement" parameterType="map" flushCache="false">
+		insert into r_preschools_management (city, preschoolstotal, citylevel, arealevel, countrylevel,
+		complete, daytime, public, large, middle, small, extrasmall, atschool,
+		atschoollt3, newexamination, schoolexamination, predictedexamination,
+		actualexamination, hemoglobin, hemoglobinlt110, hemoglobinlt90,
+		dentalcaries, normaleyesight, weightlt2sd, heightlt2sd,
+		heightweightgt1sd, heightweightgt2sd, healthmanagement, healthroom,
+		healthlicence, healthcertificate, doctor, nurse, train, fulltime,
+		parttime, creater, createtime)
+		values(#{p1}, #{p2}, #{p3}, #{p4}, #{p5}, #{p6}, #{p7}, #{p8}, #{p9}, #{p10},
+		#{p11}, #{p12}, #{p13}, #{p14}, #{p15}, #{p16}, #{p17}, #{p18},
+		#{p19}, #{p20}, #{p21}, #{p22}, #{p23}, #{p24}, #{p25}, #{p26},
+		#{p27}, #{p28}, #{p29}, #{p30}, #{p31}, #{p32}, #{p33}, #{p34},
+		#{p35}, #{p36}, #{creater}, #{createTime})
+	</insert>
+
+	<!-- 新增新生儿疾病筛查、产前筛查、产前诊断开展机构情况年报表数据 -->
+	<insert id="insertInstitutionManagement" parameterType="map" flushCache="false">
+		insert into r_institution_management (city, diseasescreen, dscitylevel, dscountylevel,
+		dstownshiplevel, dspersonnel, dsholder, dsbloodcollection,
+		dsbccitylevel, dsbccountylevel, dsbctownshiplevel, dsbcpersonnel,
+		dsbcholder, prenatalscreen, pscitylevel, pscountylevel,
+		pstownshiplevel, pspersonnel, psholder, psbloodcollection,
+		psbccitylevel, psbccountylevel, psbctownshiplevel, psbcpersonnel,
+		psbcholder, prenataldisgnosis, pdlicence, pdpersonnel, pdprofessional,
+		pdholder, creater, createtime)
+		values(#{p1}, #{p2}, #{p3}, #{p4}, #{p5}, #{p6}, #{p7}, #{p8}, #{p9}, #{p10},
+		#{p11}, #{p12}, #{p13}, #{p14}, #{p15}, #{p16}, #{p17}, #{p18},
+		#{p19}, #{p20}, #{p21}, #{p22}, #{p23}, #{p24}, #{p25}, #{p26},
+		#{p27}, #{p28}, #{p29}, #{p30}, #{creater}, #{createTime})
+	</insert>
+	
+	<!-- 地区家庭医生执行率 -->
+	<select id="familyDoctorlistPage" parameterType="page" resultType="pd" useCache="false">
+	
+	select b.hospitalname,a.doctor_name,a.doctor_position,c.f_type,c.f_date,a.doctor_id,count(c.doctor_id ) as should,
+	IFNULL((select count(follow.doctor_id ) from med_follow as follow where  a.doctor_id=follow.doctor_id and follow.have_finished='1'  group by follow.doctor_id ),0)  as actual
+	from doctor_info as a left join d_hospitalinfo as b on a.hospital_id=b.id 
+	left join med_follow as c on a.doctor_id=c.doctor_id
+	where 1=1
+	<if test="pd.conDt !=null and pd.conDt !=''">
+			<![CDATA[
+			and date_format(c.f_date, '%Y-%m') =#{pd.conDt}
+			]]>
+	</if>
+	group by a.doctor_id
+	HAVING 1=1
+	and c.f_date !=''
+	</select>
+	
+</mapper>

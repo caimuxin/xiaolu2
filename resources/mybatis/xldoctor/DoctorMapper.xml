@@ -1,0 +1,431 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="DoctorMapper">
+
+	<cache type="org.mybatis.caches.ehcache.LoggingEhcache"/>  
+	
+	<resultMap type="pd" id="doctorInfoMap">
+		<result column="doctor_id" property="doctorId"/>
+		<result column="office_id" property="officeId"/>
+		<result column="hospital_id" property="hospitalId"/>
+		<result column="doctor_name" property="doctorName"/>
+		<result column="doctor_sex" property="doctorSex"/>
+		<result column="doctor_position" property="doctorPosition"/>
+		<result column="doctor_age" property="doctorAge"/>
+		<result column="doctor_brief" property="doctorBrief"/>
+		<result column="doctor_expert" property="doctorExpert"/>
+		<result column="doctor_photo" property="doctorPhoto"/>
+		<result column="doctor_treats" property="doctorTreats"/>
+		<result column="office_name" property="officeName"/>
+		<result column="d_papertype" property="doctorPaperType"/>
+		<result column="d_papernum" property="doctorPaperNum"/>
+		<result column="d_award" property="doctorAward"/>
+		<result column="d_status" property="doctorStatus"/>
+		<result column="hospitalname" property="hospitalName"/>
+	</resultMap>
+	
+	<resultMap type="pd" id="sourceMap">
+		<result column="doctor_id" property="doctorId"/>
+		<result column="doctor_name" property="doctorName"/>
+		<result column="d_date" property="date"/>
+		<result column="d_source" property="source"/>
+		<result column="d_sourceusing" property="sourceusing"/>
+		<result column="d_zsource" property="zSource"/>
+		<result column="d_zsourceusing" property="zSourceusing"/>
+		<result column="dayorder" property="dayOrder"/>
+	</resultMap>
+	<!-- 通过时间段查找科室医生号源web -->
+	<select id="findDoctorSourceBytime" parameterType = "pd" resultMap = "sourceMap">
+		SELECT s.d_date,s.d_source,s.d_sourceusing,i.d_time,i.d_zsource,i.d_zsourceusing ,WEEKDAY(s.d_date) AS dayorder 
+		FROM doctor_sourceinfo i
+		LEFT JOIN doctor_source s ON s.d_sourceid = i.d_sourceid
+		WHERE 1 = 1
+			  <if test="dTime !=null and dTime !=''">
+		      	AND i.d_time = #{dTime}
+		      </if>
+		      <if test="doctorId !=null and doctorId !=''">
+		      	AND s.doctor_id = #{doctorId}
+		      </if>
+		      AND WEEKOFYEAR(s.d_date) = WEEKOFYEAR(NOW())
+		ORDER BY s.d_date
+	</select>
+	
+	<!-- 医生信息列表web -->
+	<select id="doctorlistPage" parameterType="page" resultMap="doctorInfoMap" useCache="false">
+		SELECT d.doctor_id,d.office_id,d.hospital_id,d.doctor_name,d.doctor_sex,d.doctor_position
+				,<![CDATA[ (YEAR(NOW())-YEAR(d.doctor_birth)-1) + ( DATE_FORMAT(d.doctor_birth, '%m%d') <= DATE_FORMAT(NOW(), '%m%d') ) ]]>   as doctor_age,d.doctor_brief
+				,d.doctor_expert,d.doctor_photo,d.doctor_treats,d.d_papertype,d.d_papernum,d_award,d.d_status,h.hospitalname,o.office_name
+		FROM doctor_info d
+		LEFT JOIN d_hospitalinfo h ON d.hospital_id = h.id
+		LEFT JOIN d_officeinfo o ON d.hospital_id = o.hospital_id AND d.office_id = o.office_id
+		where 1 = 1
+	 	<if test="pd.doctorName!=null and pd.doctorName !=''">
+	 		AND d.doctor_name LIKE CONCAT('%',#{pd.doctorName},'%') 
+	 	</if>
+	 	<if test="pd.hospitalName!=null and pd.hospitalName !=''">
+	 		AND h.hospitalname LIKE CONCAT('%',#{pd.hospitalName},'%') 
+	 	</if>
+	 	<if test="pd.doctorStatus!=null and pd.doctorStatus !=''">
+	 		AND d_status =#{pd.doctorStatus}
+	 	</if>
+	 	<if test="pd.position!=null and pd.position!=''">
+	 		AND d.doctor_position=#{pd.position}
+	 	</if>
+	 	<if test="pd.doctorId!=null and pd.doctorId!=''">
+	 		AND d.doctor_id = #{pd.doctorId}
+	 	</if>
+	 	ORDER BY d.d_award
+	</select>
+	
+	<!-- 批量删除医生信息 -->
+	<delete id="doctorInfoDelAll" parameterType="String" flushCache="false">
+		delete from doctor_info
+		where 
+			doctor_id in
+  			 <foreach item="item" index="index" collection="array" open="(" separator="," close=")">
+                  #{item}
+             </foreach>
+	</delete>
+	
+	<!-- 科室医生信息android -->
+	<select id="findDoctorInfo" parameterType = "pd" resultMap = "doctorInfoMap">
+		SELECT doctor_id,doctor_name,doctor_sex,doctor_position
+				,doctor_brief,doctor_expert,doctor_photo,doctor_treats
+		FROM doctor_info 
+		WHERE 1=1
+		<if test="officeId !=null and officeId !=''">
+			AND office_id = #{officeId}
+		</if>
+		<if test ="hospitalId !=null and hospitalId !=''">
+			AND hospital_id = #{hospitalId}
+		</if>
+		<if test ="doctorName !=null and doctorName !=''">
+			AND doctor_name = #{doctorName}
+		</if>
+		<if test ="doctorPosition !=null and doctorPosition !=''">
+			AND doctor_position = #{doctorPosition}
+		</if>
+			ORDER BY doctor_id
+		<if test = "begin != null ">
+			LIMIT #{begin}, #{offset}  
+		</if>
+	</select>
+	
+	<!-- 6.1 医生列表接口android -->
+	<select id="findDoctorListInfo" parameterType = "pd" resultMap = "doctorInfoMap">
+		 SELECT d.office_id,o.office_name,d.doctor_id,d.doctor_name FROM doctor_info d 
+	   	 LEFT JOIN d_officeinfo o ON d.office_id = o.office_id AND d.hospital_id = o.hospital_id
+	   	 WHERE 1 = 1
+	    	<if test ="hospitalId !=null and hospitalId !=''">
+	    		AND d.hospital_id = #{hospitalId}
+	    	</if>
+	    	<choose>
+	    		<when test="officeId !=null and officeId !=''">
+	  			  AND d.office_id = #{officeId}
+	    		</when>
+	    		<otherwise>
+	    		  AND o.type = 'c'
+	    		</otherwise>
+	    	</choose>
+	</select>
+	
+	<!-- 医生详情接口android -->
+	<select id="findDoctorDetail" parameterType = "pd" resultMap = "doctorInfoMap">
+		SELECT d.hospital_id,h.hospitalname,d.office_id,o.office_name,d.doctor_id
+		,d.doctor_name,d.doctor_position,d.doctor_photo,d.doctor_brief,d.doctor_expert,d.doctor_treats 
+		FROM doctor_info d
+		LEFT JOIN d_hospitalinfo h ON d.hospital_id = h.id
+		LEFT JOIN d_officeinfo o ON d.office_id =o.office_id AND d.hospital_id = o.hospital_id
+		where 1 = 1
+			AND d.doctor_id = #{doctorId}
+	</select>
+	
+	<!-- 我的中关注的医生android -->
+	<select id="findMyDoctorInfo" parameterType = "pd" resultMap = "doctorInfoMap">
+		SELECT d.hospital_id,h.hospitalname,d.office_id,o.office_name,d.doctor_id
+			,d.doctor_name,d.doctor_position,d.doctor_photo,d.doctor_expert
+		FROM u_collection c
+		LEFT JOIN doctor_info d ON c.doctor_id = d.doctor_id
+		LEFT JOIN d_hospitalinfo h ON d.hospital_id = h.id
+		LEFT JOIN d_officeinfo o ON d.office_id =o.office_id AND d.hospital_id = o.hospital_id
+		WHERE 1 = 1
+			AND c.c_type='d'
+			AND c.user_id = #{userId}
+	</select>
+	
+	<!-- 科室医生信息web -->
+	<select id="findDoctorInfoWeblistPage" parameterType = "page" resultMap = "doctorInfoMap" useCache="false">
+		SELECT doctor_id,doctor_name,doctor_sex,doctor_position
+				,doctor_brief,doctor_expert,doctor_photo
+		FROM doctor_info 
+		WHERE 1=1
+		<if test="pd.officeId !=null and pd.officeId !=''">
+			AND office_id = #{pd.officeId}
+		</if>
+		<if test ="pd.hospitalId !=null and pd.hospitalId !=''">
+			AND hospital_id = #{pd.hospitalId}
+		</if>
+		<if test ="pd.doctorName !=null and pd.doctorName !=''">
+			AND doctor_name LIKE CONCAT('%',#{pd.doctorName},'%')
+		</if>
+		<if test ="pd.doctorPosition !=null and pd.doctorPosition !=''">
+			AND doctor_position = #{pd.doctorPosition}
+		</if>
+		ORDER BY doctor_id
+	</select>
+	
+	<resultMap type="pd" id="weekSourceMap">
+		<result column="doctor_id" property="doctorId"/>
+		<result column="doctor_name" property="doctorName"/>
+		<result column="d_date" property="date"/>
+		<result column="d_source" property="source"/>
+		<result column="d_sourceusing" property="sourceusing"/>
+	</resultMap>
+	<!-- 医生周号源信息android -->
+	<select id="findDoctorWeekSource" parameterType = "pd" resultMap = "weekSourceMap">
+		SELECT ds.doctor_id,ds.d_date,ds.d_source,ds.d_sourceusing,d.doctor_name FROM doctor_info d
+		LEFT JOIN  doctor_source ds ON ds.doctor_id = d.doctor_id
+		WHERE 1 = 1
+			AND WEEKOFYEAR(ds.d_date) = WEEKOFYEAR(NOW())
+		<if test = "hospitalId != null and hospital!= ''">
+			AND d.hospital_id = #{hospitalId}
+		</if>
+		<if test="officeId != null and officeId !=''">
+			AND d.office_id = #{officeId}
+		</if>
+		<if test = "doctorId !=null and doctorId != ''">
+			AND d.doctor_id = #{doctorId}
+		</if>		
+			ORDER BY ds.d_date
+	</select>
+	
+	<resultMap type="pd" id="daySourceMap">
+		<result column="d_time" property="time"/>
+		<result column="d_zsource" property="zSource"/>
+		<result column="d_zsourceusing" property="zSourceusing"/>
+		<result column="d_timetype" property="timeType"/>
+		<result column="d_amount" property="amount"/>
+	</resultMap>
+	<!-- 医生日号源信息android -->
+	<select id="findDoctorDaySource" parameterType = "pd" resultMap = "daySourceMap">
+		SELECT dsi.d_time,dsi.d_zsource,dsi.d_zsourceusing,dsi.d_timetype,dsi.d_amount
+		FROM doctor_info d
+		LEFT JOIN doctor_source ds ON d.doctor_id = ds.doctor_id
+		LEFT JOIN doctor_sourceinfo dsi ON ds.d_sourceid = dsi.d_sourceid
+		WHERE 1 = 1
+		<if test="hospitalId !=null and hospitalId !=''">
+			AND d.hospital_id = #{hospitalId}
+		</if>
+		<if test="officeId != null and officeId !=''">
+			AND d.office_id = #{officeId}
+		</if>
+		<if test="doctorId != null and doctorId !=''">
+			AND d.doctor_id = #{doctorId}
+		</if>
+		<if test="date != null and date !=''">
+			AND ds.d_date = DATE_FORMAT(#{date},'%y-%m-%d')
+		</if>
+		<if test="time !=null and time!=''">
+			AND dsi.d_time = #{time}
+		</if>
+		ORDER BY dsi.d_time
+	</select>
+	
+	<!-- Excel导入 -->
+	<insert id="saveDoctorExel" parameterType="pd" flushCache="false">
+		 INSERT INTO doctor_info (office_id,hospital_id,doctor_name,doctor_sex,doctor_birth,doctor_position,d_award)
+		 VALUES(#{officeId},#{hospitalId},#{doctorName},#{doctorSex},#{doctorBirth},#{doctorPosition},#{dAward})
+	</insert>
+	
+	<!-- 收到新增医生信息 -->
+	<insert id="saveDoctorInfo" parameterType = "pd" flushCache = "false">
+		 INSERT INTO doctor_info(doctor_id,office_id,hospital_id,doctor_name,doctor_sex,doctor_position,doctor_birth
+				,doctor_brief,doctor_expert,doctor_photo,doctor_treats,doctor_phone,doctor_education,doctor_work,d_papertype,d_papernum,d_award
+				)
+			VALUES
+			  (
+			 	#{doctor_id},
+			    #{office_id},
+			    #{hospital_id},
+			    #{doctor_name},
+			    #{doctor_sex},
+			    #{doctor_position},
+			    #{doctor_birth},
+			    #{doctor_brief},
+			    #{doctor_expert},
+			    #{doctor_photo},
+			    #{doctor_treats},
+			    #{doctor_phone},
+			    #{doctor_education},
+			    #{doctor_work},
+			    #{d_papertype},
+			    #{d_papernum},
+			    #{d_award}
+			  );
+	</insert>
+	
+	
+	<!-- 新增医生信息是同时向sys_user表新增一条数据 -->
+	<insert id="saveDocusers" parameterType="pd" flushCache="false">
+	insert into sys_user (
+			user_id,
+			username,
+			password,
+			name,
+			role_id,
+			status,
+			phone
+		) values (
+			#{user_id},
+			#{username},
+			#{password},
+			#{name},
+			#{role_id},
+			#{status},
+			#{phone}
+		)
+	
+	
+	</insert>
+	
+	<!-- 根据医生id查询医生信息 -->
+	<select id="findDoctorId" parameterType="pd" resultType="pd" useCache="false">
+	
+		SELECT
+			doctor_id,
+			office_id,
+			hospital_id,
+			doctor_name,
+			doctor_sex,
+			doctor_position,
+			doctor_age,
+			doctor_brief,
+			doctor_expert,
+			doctor_photo,
+			doctor_birth,
+			doctor_treats,
+			doctor_phone,
+			doctor_education,
+			doctor_work,
+			d_papertype,
+			d_papernum,
+			d_award,
+			d_status
+		FROM
+			doctor_info
+		where doctor_id=#{doctor_id}
+	</select>
+	
+	<!-- 修改患者信息 -->
+	<update id="updDoctor" parameterType="pd" flushCache="false">
+		update  doctor_info
+			set 	
+				office_id 			=	#{office_id},
+				hospital_id			=	#{hospital_id},
+				doctor_name			=	#{doctor_name},
+				doctor_sex			=	#{doctor_sex},
+				doctor_position		=	#{doctor_position},
+				doctor_age			=	#{doctor_age},
+				doctor_brief		=	#{doctor_brief},
+				doctor_expert		=	#{doctor_expert},
+				doctor_photo		=	#{doctor_photo},
+				doctor_birth		=	#{doctor_birth},
+				doctor_treats		=	#{doctor_treats},
+				doctor_phone		=	#{doctor_phone},
+				doctor_education	=	#{doctor_education},
+				doctor_work			=	#{doctor_work},
+				d_papertype			=	#{d_papertype},
+				d_papernum			=	#{d_papernum},
+				d_award				=	#{d_award},
+				d_status			=	#{d_status}
+			where 
+				doctor_id 			= 	#{doctor_id}
+	</update>
+	
+	<!-- 删除医生头像 -->
+	<update id="delDoctorPhoto" parameterType="pd" flushCache="false">
+		update  doctor_info
+			set 	
+				doctor_photo		=''
+			where 
+				doctor_id 			= 	#{doctor_id}
+	</update>
+	
+	<!-- 查询医生所对应的患者信息 -->
+	<select id="diseaselistPage" parameterType="page" resultMap="doctorInfoMap" useCache="false">
+		SELECT
+			a.uuid,
+			a.user_namezs,
+			a.u_birthday,
+			a.u_sex,
+			a.u_age,
+			a.u_height,
+			a.u_papertype,
+			a.u_papernum,
+			a.u_address,
+			a.u_photo,
+			a.u_duedate,
+			a.u_preg_all,
+			a.u_preg_zr,
+			a.u_preg_pf,
+			a.u_past,
+			a.u_family,
+			a.u_person,
+			e.phone,
+			b.doctor_id AS bid,
+			c.doctor_id AS cid,
+			d.doctor_id AS did
+		FROM
+		sys_user_info AS a 
+		LEFT JOIN u_outpatient AS b ON a.uuid=b.user_id 
+		LEFT JOIN hospitalized AS c ON a.uuid=c.user_id 
+		LEFT JOIN med_follow   AS d ON a.uuid=d.user_id
+		LEFT JOIN sys_user 	   AS e ON a.uuid=e.user_id
+		WHERE b.doctor_id=#{pd.doctor_id} OR c.doctor_id=#{pd.doctor_id} OR d.doctor_id=#{pd.doctor_id}
+		GROUP BY a.uuid
+		HAVING 1=1
+		<if test="pd.user_namezs !=null and pd.user_namezs !=''">
+			and a.user_namezs like concat(concat('%',#{pd.user_namezs},'%'))
+		</if>
+		<if test="pd.conDt !=null and pd.conDt !='' and pd.conDts !=null and pd.conDts !=''">
+			<![CDATA[
+			and a.u_birthday>#{pd.conDt} and u_birthday<#{pd.conDts}
+			]]>
+		</if>
+	</select>
+	
+	<!-- 根据医院id查询医生信息 -->
+	<select id="getHospitalId" parameterType="pd" resultType="pd" useCache="false">
+		SELECT
+			doctor_id,
+			office_id,
+			hospital_id,
+			doctor_name,
+			doctor_sex,
+			doctor_position,
+			doctor_age,
+			doctor_brief,
+			doctor_expert,
+			doctor_photo,
+			doctor_birth,
+			doctor_treats,
+			doctor_phone,
+			doctor_education,
+			doctor_work,
+			d_papertype,
+			d_papernum,
+			d_award,
+			d_status
+		FROM
+			doctor_info
+		where 1=1
+		<if test="hospital_id != null and hospital_id !='' ">
+			and hospital_id=#{hospital_id}
+		</if>
+		
+		<if test="office_id != null and office_id !='' ">
+			and office_id=#{office_id}
+		</if>
+	</select>
+</mapper>

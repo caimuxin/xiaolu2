@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="BUltrasoundMapper">
+	
+	<resultMap type="Source" id="BResultMap">
+		<result column="b_sourceid" property="sourceId"/>
+		<result column="office_id" property="officeId"/>
+		<result column="b_date" property="bDate"/>
+		<result column="B_dsource" property="dSource"/>
+		<result column="b_dsourceusing" property="dSourceUsing"/>
+	</resultMap>
+	
+	<resultMap type="pd" id="subResultMap">
+		<result column="b_sourceid" property="sourceId"/>
+		<result column="b_sinfoid" property="sInfoId"/>
+		<result column="b_time" property="startTime"/>
+		<result column="endtime" property="endTime"/>
+		<result column="b_timetype" property="timeType"/>
+		<result column="b_tsource" property="tSource"/>
+		<result column="b_tsourceusing" property="tSourceUsing"/>
+		<result column="o_amount" property="amount"/>
+		<result column="dayorder" property="dayOrder"/>
+	</resultMap>
+	
+	<resultMap type="pd" id="webDaySource">
+		<result column="b_sourceid" property="sourceId"/>
+		<result column="office_id" property="officeId"/>
+		<result column="b_date" property="bDate"/>
+		<result column="B_dsource" property="dSource"/>
+		<result column="b_dsourceusing" property="dSourceUsing"/>
+		<result column="dayorder" property="dayOrder"/>
+		<result column="cuday" property="cuDay"/>
+	</resultMap>
+	
+	<!-- 通过科室id获取号源 -->
+	<select id="findSourceByOfficeId" parameterType = "pd" resultMap = "BResultMap">
+		SELECT 
+			   s.b_sourceid,s.office_id,s.b_date,s.b_dsource,s.b_dsourceusing,i.b_sinfoid
+			   ,i.b_time,i.b_timetype,i.b_tsource,i.b_tsourceusing,i.o_amount 
+		FROM d_bmode_source s
+		LEFT JOIN d_bmode_sourceinfo i ON s.b_sourceid = i.b_sourceid
+		WHERE 1=1
+		<if test="officeId != null and officeId != ''">
+			AND s.office_id = #{officeId}
+		</if>
+	</select>
+	
+	<!-- 查找号源使用量android -->
+	<select id="findSourceUsing" parameterType = "pd" resultType="pd">
+		SELECT i.B_tsource as tSource,i.B_tsourceusing as tSourceusing FROM d_officeinfo o
+			LEFT JOIN d_bmode_source s ON o.Office_id = s.Office_id
+			LEFT JOIN d_bmode_sourceinfo  i ON s.B_sourceid = i.B_sourceid
+		WHERE 1 = 1
+			AND o.Hospital_id = #{hospitalId}
+			AND o.Office_id = #{officeId}
+			AND s.B_date = #{orderDate}
+			AND i.B_time = #{orderTime}
+	</select>
+	
+	<!-- 根据科室Id获取当周主号源信息web -->
+	<select id="findDaySourceByOfficeId" parameterType = "pd" resultMap = "webDaySource">
+		SELECT 
+			   s.b_sourceid,s.office_id,s.b_date,s.b_dsource,s.b_dsourceusing,WEEKDAY(b_date)+1 AS dayorder,TO_DAYS(b_date)=TO_DAYS(CURDATE()) AS cuday
+		FROM d_bmode_source s
+		WHERE 1=1 
+			AND WEEKOFYEAR(s.b_date)= WEEKOFYEAR(NOW())
+		<if test="officeId != null and officeId != '' and findById =='y'.toString()">
+			AND s.office_id = #{officeId}
+		</if>
+		 ORDER BY s.b_date
+	</select>
+	
+	<!-- 根据主号源id获取子号源信息web -->
+	<select id="findTimeSourceByOfficeId" parameterType ="pd" resultMap = "subResultMap">
+		SELECT 
+			   i.b_sinfoid,i.b_sourceid,i.b_time,i.b_timetype,i.b_tsource,i.b_tsourceusing,i.o_amount 
+		FROM d_bmode_sourceinfo i
+		WHERE 1=1
+		<if test="sourceId != null and sourceId != ''">
+			AND i.b_sourceid = #{sourceId}
+		</if>
+		ORDER BY b_time
+	</select>
+	
+	<!-- 根据时间获取本星期的同时间段号源 -->
+	<select id="findTimeSourceByTime" parameterType ="pd" resultMap = "subResultMap">
+		SELECT i.B_tsource,i.B_tsourceusing,i.B_time,s.B_date,s.Office_id,WEEKDAY(b_date) AS dayorder 
+		FROM d_bmode_sourceinfo i
+		LEFT JOIN d_bmode_source s ON i.B_sourceid = s.B_sourceid
+		WHERE i.B_time = #{bTime}
+			AND s.Office_id = #{officeId}
+			AND WEEKOFYEAR(s.b_date) = WEEKOFYEAR(NOW())
+		ORDER BY s.B_date
+	</select>
+	
+	<!-- B超科室队列信息Map -->
+	<resultMap type="pd" id="officeQueue">
+		<result column="office_id" property="officeId"/>
+		<result column="office_name" property="officeName"/>
+		<result column="queue_id" property="queueId"/>
+		<result column="q_date" property="qDate"/>
+		<result column="q_snum" property="qSNum"/>
+		<result column="q_currentime" property="qCurrenTime"/>
+		<result column="q_currentnum" property="QCurrentNum"/>
+		<result column="queueinfo_id" property="queueInfoId"/>
+		<result column="q_num" property="qNum"/>
+		<result column="q_num_user" property="qNumUser"/>
+		<result column="q_num_time" property="qNumTime"/>
+	</resultMap>
+	<!-- B超科室队列信息 -->
+	<select id="findOfficeQueue" parameterType ="pd" resultMap = "officeQueue">
+		SELECT o.office_id,o.office_name,q.queue_id,q.q_date,q.q_snum,q.q_currentime,q.q_currentnum,i.queueinfo_id
+				,i.q_num,i.q_num_user,i.q_num_time 
+		FROM d_officeinfo o
+		LEFT JOIN d_b_queue q ON o.office_id = q.office_id
+		LEFT JOIN d_b_queueinfo i ON q.queue_id = i.queue_id AND q.q_currentnum = i.q_num
+		WHERE 1 = 1
+		<if test="qofficeId != null and qofficeId !=''">
+			AND o.Office_id = #{qofficeId}
+		</if>
+		<if test="qDate != null and qDate !=''">
+			AND q.q_date = DATE_FORMAT(#{qDate}, '%y-%m-%d') 
+		</if>
+		ORDER BY o.officeorder
+	</select>
+	
+	<!-- 队列排列 -->
+	<select id="findQueueAlert" parameterType ="pd" resultMap = "officeQueue">
+		SELECT q.q_snum,q.q_currentnum,q.q_date,i.q_num,i.q_num_user
+		FROM d_officeinfo o
+		LEFT JOIN d_b_queue q ON o.office_id = q.office_id
+		LEFT JOIN d_b_queueinfo i ON q.queue_id = i.queue_id
+		WHERE 1=1
+				<![CDATA[
+				AND (i.q_num >=IF(q.q_currentnum -2 >0,q.q_currentnum -2,1) AND i.q_num <=q.q_currentnum+2)
+				]]>
+			<if test="officeId != null and officeId !=''">
+				AND o.office_id = #{officeId}
+			</if>
+			<if test="qDate != null and qDate !=''">
+				AND q.q_date = DATE_FORMAT(#{qDate}, '%y-%m-%d')
+			</if>
+			<if test="startTime != null and startTime !=''">
+			 	<![CDATA[
+					AND i.q_num_time>=#{startTime}
+				]]>
+			</if>
+			<if test="endTime != null and endTime !=''">
+				<![CDATA[
+					AND  i.q_num_time<= #{endTime}
+				]]>
+			</if>
+		ORDER BY i.q_num
+	</select>
+	
+	<select id="getStatQueue" parameterType ="pd" resultType = "Integer">
+		SELECT COUNT(i.q_num_user) AS totalUser
+		FROM d_officeinfo o
+		LEFT JOIN d_b_queue q ON o.office_id = q.office_id
+		LEFT JOIN d_b_queueinfo i ON q.queue_id = i.queue_id
+		WHERE 1=1
+		<if test="officeId != null and officeId !=''">
+			AND o.office_id = #{officeId}
+		</if>
+		<if test="qDate != null and qDate !=''">
+			AND q.q_date = DATE_FORMAT(#{qDate}, '%y-%m-%d')
+		</if>
+		<if test="startTime != null and startTime !=''">
+		 	<![CDATA[
+				AND i.q_num_time>=#{startTime}
+			]]>
+		</if>
+		<if test="endTime != null and endTime !=''">
+			<![CDATA[
+				AND  i.q_num_time<= #{endTime}
+			]]>
+		</if>
+		GROUP BY o.office_id
+	</select>
+	
+	<!-- 根据科室Id获取主号源信息android -->
+	<select id="findMainSourceByOfficeId" parameterType = "pd" resultMap = "BResultMap">
+		SELECT 
+			   s.b_sourceid,s.office_id,s.b_date,s.b_dsource,s.b_dsourceusing
+		FROM d_bmode_source s
+		WHERE 1=1 
+			AND WEEKOFYEAR(s.b_date)= WEEKOFYEAR(NOW())
+		<if test="officeId != null and officeId != ''">
+			AND s.office_id = #{officeId}
+		</if>
+		 ORDER BY s.b_date
+	</select>
+	
+	<!-- 根据主号源id获取子号源信息android -->
+	<select id="findSubSourceByOfficeId" parameterType ="pd" resultMap = "subResultMap">
+		SELECT 
+			   i.b_sinfoid,i.b_sourceid,i.b_time,i.b_timetype,i.b_tsource,i.b_tsourceusing,i.o_amount
+		FROM d_bmode_sourceinfo i
+		WHERE 1=1
+		<if test="sourceId != null and sourceId != ''">
+			AND i.b_sourceid = #{sourceId}
+		</if>
+		ORDER BY b_time
+	</select>
+	
+	<!-- 预约记录android -->
+	<insert id="addOrder" parameterType ="pd">
+		INSERT INTO d_orderlist
+				(o_User_id,o_doctor_id,order_type,Order_date,order_time,Order_running,o_office_id,o_hospital_id,o_status,O_createTime) 
+		VALUES
+				(#{userId},#{doctorId},#{orderType},#{orderDate},#{orderTime},#{orderRunning},#{officeId},#{hospitalId},#{status},#{createTime});
+	</insert>
+	
+</mapper>

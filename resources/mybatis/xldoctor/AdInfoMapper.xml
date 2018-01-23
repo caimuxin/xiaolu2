@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="AdInfoMapper">
+
+	<cache type="org.mybatis.caches.ehcache.LoggingEhcache"/>
+
+	<!-- 查询所有广告信息-->
+	<select id="findAdInfolistPage" parameterType="page" resultType="pd" useCache="false">
+
+		SELECT
+			A.AD_ID,
+			A.AD_SECTION,
+			A.AD_TITLE,
+			A.AD_SEQUENCE,
+			A.AD_PURL,
+			A.AD_ISUB,
+			A.AD_SUBTITLE,
+			A.AD_SUBINFO,
+			A.AD_SUBURL,
+			A.AD_USERID,
+			A.AD_DT,
+			B.USERNAME
+			FROM AD_INFO AS A 
+			LEFT JOIN SYS_USER B ON A.AD_USERID=B.USER_ID
+
+	</select>
+	
+	<select id="getAdId" parameterType="pd" resultType="pd" useCache="false">
+		SELECT
+			AD_ID,
+			AD_SECTION,
+			AD_TITLE,
+			AD_SEQUENCE,
+			AD_PURL,
+			AD_ISUB,
+			AD_SUBTITLE,
+			AD_SUBINFO,
+			AD_SUBURL,
+			AD_USERID,
+			AD_DT,
+			HOSPITAL_ID
+			FROM AD_INFO
+			WHERE AD_ID=#{adId}
+	</select>
+	
+	<!-- 批量删除用户 -->
+	<delete id="deleteAdInfo" parameterType="String">
+		DELETE FROM AD_INFO
+		WHERE 
+			AD_ID in
+  			 <foreach item="item" index="index" collection="array" open="(" separator="," close=")">
+                  #{item}
+             </foreach>
+	</delete>
+	
+	<delete id="delAdInfo" parameterType="pd" flushCache="false">
+		DELETE FROM AD_INFO
+		WHERE 
+			AD_ID = #{anId}
+	</delete>
+	
+	<insert id="addAdInfo" parameterType="pd" flushCache="false">
+		INSERT
+		INTO AD_INFO (
+		ad_id,
+		ad_section,
+		ad_title,
+		ad_sequence,
+		ad_purl,
+		ad_isub,
+		ad_subtitle,
+		ad_subinfo,
+		ad_suburl,
+		ad_userid,
+		ad_dt,
+		hospital_id
+		)
+		VALUES
+		(
+		#{adId},
+		#{adSection},
+		#{adTitle},
+		#{adSequence},
+		#{adPurl},
+		#{adIsub},
+		#{adSubtitle},
+		#{adSubinfo},
+		#{adSuburl},
+		#{adUserid},
+		#{adDt},
+		#{hospital_id}
+		)
+	</insert>
+	
+	<update id="updAdInfo" parameterType="pd" flushCache="false">
+		UPDATE AD_INFO SET
+		AD_SECTION=#{adSection},
+		AD_TITLE=#{adTitle},
+		AD_SEQUENCE=#{adSequence},
+		AD_PURL=#{adPurl},
+		AD_ISUB=#{adIsub},
+		AD_SUBTITLE=#{adSubtitle},
+		AD_SUBINFO=#{adSubinfo},
+		AD_SUBURL=#{adSuburl},
+		AD_USERID=#{adUserid},
+		HOSPITAL_ID=#{hospital_id}
+		WHERE AD_ID=#{adId}
+	</update>
+	
+	<resultMap type="pd" id="adInfoMap">
+		<result column="AD_ID" property="adId"/>												<!-- 广告id -->
+		<result column="AD_SECTION" property="adSection"/>							<!-- 广告类别 -->
+		<result column="AD_TITLE" property="adTitle"/>										<!-- 广告标题 -->
+		<result column="AD_SEQUENCE" property="adSequence"/>					<!-- 广告顺序 -->
+		<result column="AD_PURL" property="adPurl"/>										<!-- 广告图片 -->
+		<result column="AD_ISUB" property="adIsub"/>										<!-- 是否包含子广告 -->
+		<result column="AD_SUBTITLE" property="adSubTitle"/>							<!-- 子广告标题 -->
+		<result column="AD_SUBINFO" property="adSubInfo"/>							<!-- 子广告文章内容 -->
+		<result column="AD_SUBURL" property="adSubUrl"/>								<!-- 子广告文章图片 -->
+		<result column="AD_USERID" property="adUserId"/>								<!-- 发布者ID -->
+		<result column="AD_DT" property="adDt"/>											<!-- 发布时间 -->
+		<result column="USERNAME" property="userName"/>							<!-- 发布者姓名 -->
+		<result column="HOSPITAL_ID" property="hospitalId"/>							<!-- 广告所属的医院 -->
+	</resultMap>
+	
+	<select id="getAdByIdForMobile" parameterType="pd" resultMap="adInfoMap" useCache="false">
+		SELECT
+			AD_ID,
+			AD_SECTION,
+			AD_TITLE,
+			AD_SEQUENCE,
+			AD_PURL,
+			AD_ISUB,
+			AD_SUBTITLE,
+			AD_SUBINFO,
+			AD_SUBURL,
+			AD_USERID,
+			AD_DT
+			FROM AD_INFO
+			WHERE AD_ID=#{adId}
+	</select>
+	
+	<!-- 查询3条广告信息-->
+	<select id="findAdInfoForMobile" parameterType="pd"  resultMap="adInfoMap" useCache="false">
+
+		SELECT
+			A.AD_ID,
+			A.AD_SECTION,
+			A.AD_TITLE,
+			A.AD_SEQUENCE,
+			A.AD_PURL,
+			A.AD_ISUB,
+			A.AD_SUBTITLE,
+			A.AD_SUBINFO,
+			A.AD_SUBURL,
+			A.AD_USERID,
+			A.AD_DT,
+			A.HOSPITAL_ID,
+			B.USERNAME
+			FROM AD_INFO AS A 
+			LEFT JOIN SYS_USER B ON A.AD_USERID=B.USER_ID
+			WHERE A.AD_SECTION = #{sectionType}
+		<choose>
+		
+		<when test="sectionType=='JC' or sectionType=='jc'">
+			ORDER BY AD_DT ASC
+			LIMIT 0 , 1
+		</when>
+		
+		<when test="(hospitalId ==null or hospitalId =='') and (sectionType=='SY' or sectionType=='sy') ">
+			ORDER BY AD_DT ASC
+			LIMIT 0 , 1
+		</when>
+		
+		<when test="hospitalId !=null and hospitalId !='' ">
+			 and  A.HOSPITAL_ID=#{hospitalId}
+			 ORDER BY AD_SEQUENCE ASC, AD_DT DESC
+			 LIMIT 0 , 3
+		</when>
+		<otherwise>
+			ORDER BY AD_SEQUENCE ASC, AD_DT DESC
+			LIMIT 0 , 3
+		</otherwise>
+		
+		</choose>
+	</select>
+	
+	
+	<update id="delPurl" parameterType="pd" flushCache="false">
+
+		UPDATE ad_info SET 
+		ad_purl='' 
+		WHERE ad_id= #{adId}
+
+	</update>
+	
+	<update id="delSuburl" parameterType="pd" flushCache="false">
+
+		UPDATE ad_info SET 
+		ad_suburl='',
+		ad_isub='N'
+		WHERE ad_id= #{adId}
+
+	</update>
+</mapper>

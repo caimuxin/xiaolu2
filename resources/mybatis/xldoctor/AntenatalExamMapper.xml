@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="AntenatalExam">
+	
+	
+	<resultMap type="pd" id="doctorInfoMap">
+		<result column="doctor_id" property="doctorId"/>
+		<result column="office_id" property="officeId"/>
+		<result column="hospital_id" property="hospitalId"/>
+		<result column="doctor_name" property="doctorName"/>
+		<result column="doctor_sex" property="doctorSex"/>
+		<result column="doctor_position" property="doctorPosition"/>
+		<result column="doctor_age" property="doctorAge"/>
+		<result column="doctor_brief" property="doctorBrief"/>
+		<result column="doctor_expert" property="doctorExpert"/>
+		<result column="doctor_photo" property="doctorPhoto"/>
+	</resultMap>
+	
+	
+	<select id="findDoctorInfo" parameterType = "pd" resultMap = "doctorInfoMap">
+		SELECT doctor_id,office_id,hospital_id,doctor_name,doctor_sex,doctor_position,doctor_age
+				,doctor_brief,doctor_expert,doctor_photo
+		FROM doctor_info 
+		WHERE 1=1
+		<if test="officeId !=null and officeId !=''">
+			AND office_id = #{officeId}
+		</if>
+		<if test ="hospitalId !=null and hospitalId !=''">
+			AND hospital_id = #{hospitalId}
+		</if>
+		<if test ="doctorName !=null and doctorName !=''">
+			AND doctor_name = #{doctorName}
+		</if>
+		<if test ="doctorPosition !=null and doctorPosition !=''">
+			AND doctor_position = #{doctorPosition}
+		</if>
+	</select>
+
+	
+</mapper>

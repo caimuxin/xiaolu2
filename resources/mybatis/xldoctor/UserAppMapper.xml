@@ -1,0 +1,513 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="UserAppMapper">
+	
+	<!-- 重复性验证 -->
+	
+	<select id="findUserByName" parameterType = "pd" resultType = "pd">
+		SELECT  
+			  user_id as userId,userName 
+		FROM  
+			sys_user
+		where 
+			username = #{userName}
+	</select>
+	
+	<!-- 新增用户 -->
+	<insert id="saveUserFromApp" parameterType="pd" flushCache="false">
+		insert into SYS_USER (
+			USER_ID,
+			USERNAME,
+			PASSWORD,
+			NAME,
+			LAST_LOGIN,
+			STATUS,
+			PHONE,
+			u_type,
+			group_id,
+			createtime
+		) values (
+			#{userId},
+			#{userName},
+			#{password},
+			#{name},
+			#{lastLogin},
+			#{status},
+			#{phone},
+			#{u_type},
+			#{group_id},
+			#{createTime}
+		);
+		
+	</insert>
+	<!-- 注册同时插入详情 -->
+	<insert id="saveUserInfo" parameterType="pd" flushCache="false">
+		insert into sys_user_info (uuid)values(#{userId});
+	</insert>
+	
+	<!-- 登录判断用户名和密码 -->
+	<select id="getUserInfo" parameterType="pd" resultType="pd" useCache="false"><!-- insert update delete (flushCache="true/false") -->
+		select u.user_id as userId,u.userName,u.password,u.name,u.last_login as lastLogin,u.status,u.phone
+			   ,u.group_id as groupId
+		from SYS_USER u
+		LEFT JOIN sys_user_info i on u.user_id = i.uuid
+		where 1=1
+		<if test="userName != null and password != null">
+	  	and	
+	  		(u.USERNAME = #{userName} and u.PASSWORD = #{password})
+		</if>
+	</select>
+	<resultMap type="pd" id="userInfoMap">
+		<result column="user_id" property="userId"/>
+		<result column="name" property="name"/>
+		<result column="user_namezs" property="userNameZS"/>
+		<result column="u_papertype" property="uPaperType"/>
+		<result column="u_papernum" property="uPaperNum"/>
+		<result column="u_age" property="uAge"/>
+		<result column="u_height" property="uHeight"/>
+		<result column="u_duedate" property="uDuedate"/>
+		<result column="u_photo" property="uPhoto"/>
+		<result column="phone" property="phone"/>
+		<result column="u_birthday" property="uBirthday"/>
+		<result column="u_age" property="uAge"/>
+		<result column="u_sex" property="uSex"/>
+	</resultMap>
+	<!-- 读取我的信息 -->
+	<select id="findMyInfo" parameterType="pd" resultMap="userInfoMap">
+		SELECT m.user_id,m.name,m.phone,d.user_namezs,d.u_papertype,d.u_papernum,d.u_height,d.u_birthday
+			   ,d.u_duedate,d.u_photo,d.u_age,d.u_sex
+		FROM sys_user m
+		LEFT JOIN sys_user_info d ON m.user_id = d.uuid
+		WHERE 1 = 1
+			 AND m.user_id = #{userId}
+	</select>
+	
+	<!-- 判断sys_user_info有没有记录 -->
+	<select id="haveUserInfo" parameterType="pd" resultType = "pd" flushCache="false">
+		SELECT uuid FROM sys_user_info
+			WHERE 1 = 1
+		AND uuid = #{userId}
+	</select>
+	
+	<!-- sys_user_info里没数据增加一条 -->
+	<insert id="saveEmptyUserInfo" parameterType="pd">
+		INSERT INTO sys_user_info(uuid)VALUES(#{userId})
+	</insert>
+	
+	<!-- 更新我的信息 -->
+	<update id="updateMyInfo" parameterType="pd">
+		UPDATE sys_user m LEFT JOIN sys_user_info d ON  m.user_id = d.uuid
+		<set>
+			<if test="name != null and name !=''">
+				m.name = #{name},
+			</if>
+			<if test="userNameZS != null and userNameZS !=''">
+				d.user_namezs = #{userNameZS},
+			</if>
+			<if test="uPaperType != null and uPaperType !=''">
+				d.u_papertype = #{uPaperType},
+			</if>
+			<if test="uPaperNum != null and uPaperNum !=''">
+				d.u_papernum = #{uPaperNum},
+			</if>
+			<if test="uAge != null and uAge !=''">
+				d.u_age = #{uAge},
+			</if>
+			<if test="uHeight != null and uHeight !=''">
+				d.u_height = #{uHeight},
+			</if>
+			<if test="uDuedate != null and uDuedate !=''">
+				d.u_duedate = #{uDuedate},
+			</if>
+			<if test="uPhoto != null and uPhoto !=''">
+				d.u_photo = #{uPhoto},
+			</if>
+			<if test="uBirthday != null and uBirthday !=''">
+				d.u_birthday = #{uBirthday},
+			</if>
+			<if test="uSex != null and uSex !=''">
+				d.u_sex = #{uSex},
+			</if>
+			<if test="phone != null and phone !=''">
+				m.phone = #{phone}
+			</if>
+		</set> 
+		WHERE m.user_id = #{userId}
+	</update>
+	
+	<resultMap type="pd" id="orderInfoMap">
+		<result column="order_type" property="orderType"/>
+		<result column="order_date" property="orderDate"/>
+		<result column="order_time" property="orderTime"/>
+		<result column="o_office_id" property="officeId"/>
+		<result column="o_hospital_id" property="hospitalId"/>
+		<result column="o_status" property="oStatus"/>
+		<result column="o_createtime" property="oCreateTime"/>
+		<result column="office_name" property="officeName"/>
+		<result column="hospitalname" property="hospitalName"/>
+		<result column="doctor_name" property="doctorName"/>
+		<result column="doctor_position" property="doctorPosition"/>
+	</resultMap>
+	<!-- 预约记录查询 -->
+	<select id="findOrderInfo" parameterType="pd" resultMap="orderInfoMap">
+		SELECT ol.order_type,ol.order_date,ol.order_time,ol.o_office_id,ol.o_hospital_id
+				,ol.o_status,DATE_FORMAT(ol.o_createtime,'%Y-%m-%d %H:%i:%s') AS o_createtime
+				,oi.office_name,h.hospitalname,d.doctor_name,d.doctor_position 
+		FROM d_orderlist ol
+		LEFT JOIN d_officeinfo oi ON  ol.o_office_id = oi.office_id AND ol.o_hospital_id = oi.hospital_id
+		LEFT JOIN d_hospitalinfo h ON ol.o_hospital_id = h.id 
+		LEFT JOIN doctor_info d ON ol.o_doctor_id = d.doctor_id
+		WHERE 1 = 1
+				AND ol.o_user_id = #{userId}
+			<if test="orderType!=null and orderType!=''">
+				AND	ol.order_type = #{orderType}
+			</if>
+				ORDER BY ol.order_id
+			<if test = "begin != null ">
+				LIMIT #{begin}, #{offset}  
+			</if>
+	</select>
+	<!-- 更新登录时间 -->
+	<update id="updateLastLogin" parameterType="pd" flushCache="false">
+		update SYS_USER set 
+		LAST_LOGIN = #{LAST_LOGIN} 
+		where USER_ID = #{USER_ID}
+	</update>
+	
+	<!-- 更新登录时间 -->
+	<update id="updatePassword" parameterType="pd" flushCache="false">
+		UPDATE SYS_USER SET 
+		PASSWORD = #{password} 
+		WHERE USERNAME = #{userName}
+	</update>
+	
+	<!-- 用户体重 -->
+	<insert id="saveWeight" parameterType="pd" flushCache="false">
+		insert into u_weighing (
+			USER_ID,
+			deviceid,
+			w_datetime,
+			w_type,
+			w_weight,
+			w_fat,
+			w_bone,
+			w_muscle,
+			w_viscer,
+			w_water,
+			w_kcal,
+			w_physic,
+			w_bmi
+		) values (
+			#{userId},
+			#{deviceid},
+			#{datetime},
+			#{type},
+			#{weight},
+			#{fat},
+			#{bone},
+			#{muscle},
+			#{viscer},
+			#{water},
+			#{kcal},
+			#{physic},
+			#{bmi}
+		)
+	</insert>
+	
+	<!-- 用户血压 -->
+	<insert id="saveBloodmeter" parameterType="pd" flushCache="false">
+		insert into u_bloodmeter (
+			user_id,
+			deviceid,
+			b_datetime,
+			b_diastolic,
+			b_systolic,
+			b_heartrate
+		) values (
+			#{userId},
+			#{deviceid},
+			#{datetime},
+			#{diastolic},
+			#{systolic},
+			#{heartrate}
+		)
+	</insert>
+	
+	<!-- 胎心 -->
+	<insert id="saveHeartesting" parameterType="pd" flushCache="false">
+		INSERT INTO u_heartesting (
+		  user_id,
+		  deviceid,
+		  h_date,
+		  h_datetime,
+		  h_tlenght,
+		  h_fetalheart,
+		  h_heartrate,
+		  createtime
+		) 
+		VALUES
+		  (
+		    #{userId},
+		    #{deviceId},
+		    #{hDate},
+		    #{hDateTime},
+		    #{hTlenght},
+		    #{hFetalHeart},
+		    #{hHeartRate},
+		    #{createTime}
+		  ) ;
+	</insert>
+	
+	<resultMap type="pd" id="weightInfoMap">
+		<result column="user_id" property="userId"/>							<!-- 用户id -->
+		<result column="weekdays" property="weekDays"/>				<!-- 一周的第几天 -->
+		<result column="weight" property="weight"/>						<!-- 体重 -->
+		<result column="w_datetime" property="dateTime"/>				<!-- 具体时间, 带时分秒 -->
+		<result column="dateTime" property="date"/>						<!-- 具体时间, 不带时分秒 -->
+		<result column="be" property="beginDate"/>							<!-- 这周或这个月开始日期 -->
+		<result column="ed" property="endDate"/>							<!-- 这周或这个月结束日期 -->
+		<result column="month_num" property="monthIndex"/>		<!-- 月的索引 -->
+		<result column="month" property="month"/>							<!-- 具体月份 -->
+	</resultMap>
+	
+	<select id="getWeightWeekData" resultType="pd"  resultMap="weightInfoMap"  useCache="false">
+		SELECT uw.user_id, WEEKDAY(uw.w_datetime) AS weekdays, uw.w_weight AS weight , DATE_FORMAT(uw.w_datetime,'%Y-%m-%d %H:%i:%s') AS w_datetime, DATE_FORMAT(uw.w_datetime, '%Y-%m-%d') AS 'dateTime',
+	 	DATE_FORMAT(DATE_SUB(now(), INTERVAL WEEKDAY(now()) DAY),'%Y-%m-%d') AS be, DATE_FORMAT(now()+ INTERVAL 7-WEEKDAY(now()) DAY,'%Y-%m-%d') AS ed
+	 	FROM u_weighing uw
+	 	WHERE 1=1 AND uw.user_id = #{userId} AND WEEKOFYEAR(uw.w_datetime) = WEEKOFYEAR(NOW())
+	 	ORDER BY uw.w_datetime ASC
+	<!-- 
+		SELECT uw.user_id, WEEKDAY(uw.w_datetime) AS weekdays, AVG(uw.w_weight) AS weight, DATE_FORMAT(uw.w_datetime,'%Y-%m-%d %H:%i:%s') AS w_datetime, DATE_FORMAT(uw.w_datetime, '%Y-%m-%d') AS 'dateTime',
+	 	DATE_FORMAT(DATE_SUB(now(), INTERVAL WEEKDAY(now()) DAY),'%Y-%m-%d') AS be, DATE_FORMAT(now()+ INTERVAL 7-WEEKDAY(now()) DAY,'%Y-%m-%d') AS ed
+	 	FROM u_weighing uw
+	 	WHERE 1=1 AND uw.user_id = #{userId} AND WEEKOFYEAR(uw.w_datetime) = WEEKOFYEAR(NOW())
+		GROUP BY DATE_FORMAT(uw.w_datetime, '%Y-%m-%d')
+		-->
+	</select>
+	
+	<select id="getWeightMonthData" resultType="pd" resultMap="weightInfoMap"  useCache="false">
+		SELECT MONTH(uw.w_datetime) AS month_num, uw.w_weight AS weight,  DATE_FORMAT(uw.w_datetime, '%Y-%m') AS 'month', 
+			DATE_FORMAT(uw.w_datetime,'%Y-%m-%d %H:%i:%s') AS w_datetime, DATE_FORMAT(uw.w_datetime, '%Y-%m-%d') AS 'dateTime'
+		FROM u_weighing uw
+	 	WHERE 1=1 AND uw.user_id = #{userId} 
+	 		AND DATE_FORMAT(uw.w_datetime,'%Y-%m') = DATE_FORMAT(NOW(),'%Y-%m')
+	 	ORDER BY uw.w_datetime ASC
+	<!--  
+		SELECT MONTH(uw.w_datetime) AS month_num, AVG(uw.w_weight) AS weight,  DATE_FORMAT(uw.w_datetime, '%Y-%m') AS 'month'
+		FROM u_weighing uw
+	 	WHERE 1=1 AND uw.user_id = #{userId}
+		GROUP BY DATE_FORMAT(uw.w_datetime, '%Y-%m')
+		-->
+	</select>
+	
+	<resultMap type="pd" id="heartInfoMap">
+		<result column="user_id" property="userId"/>							<!-- 用户id -->
+		<result column="weekdays" property="weekDays"/>				<!-- 一周的第几天 -->
+		<result column="h_fetalheart" property="fetalHeart"/>
+		<result column="h_heartrate" property="heartRate"/>
+		<result column="h_tlenght" property="TLenght"/>						<!-- 体重 -->
+		<result column="h_datetime" property="dateTime"/>				<!-- 具体时间, 带时分秒 -->
+		<result column="h_date" property="date"/>						<!-- 具体时间, 不带时分秒 -->
+		<result column="be" property="beginDate"/>							<!-- 这周或这个月开始日期 -->
+		<result column="ed" property="endDate"/>							<!-- 这周或这个月结束日期 -->
+		<result column="month_num" property="monthIndex"/>		<!-- 月的索引 -->
+		<result column="month" property="month"/>							<!-- 具体月份 -->
+	</resultMap>
+	
+	<!-- 一周胎心值 -->
+	<select id="getHeartWeekData" resultType="pd"  resultMap="heartInfoMap">
+		SELECT uh.user_id, WEEKDAY(uh.h_date) AS weekdays, uh.h_fetalheart, uh.h_heartrate, uh.h_tlenght, DATE_FORMAT(uh.h_datetime,'%Y-%m-%d %H:%i:%s') AS h_datetime,uh.h_date,
+				DATE_FORMAT(DATE_SUB(NOW(), INTERVAL WEEKDAY(NOW()) DAY),'%Y-%m-%d') AS be, DATE_FORMAT(NOW()+ INTERVAL 7-WEEKDAY(NOW()) DAY,'%Y-%m-%d') AS ed
+		FROM u_heartesting uh
+		WHERE 1=1 
+			AND uh.user_id = #{userId} 
+			AND WEEKOFYEAR(uh.h_date) = WEEKOFYEAR(NOW()) 
+			ORDER BY uh.h_date ASC
+	<!-- 
+		SELECT uh.user_id, WEEKDAY(uh.h_date) AS weekdays, AVG(uh.h_fetalheart) AS h_fetalheart,AVG(uh.h_heartrate) h_heartrate,AVG(uh.h_tlenght) h_tlenght, DATE_FORMAT(uh.h_datetime,'%Y-%m-%d %H:%i:%s') AS h_datetime,uh.h_date,
+				DATE_FORMAT(DATE_SUB(NOW(), INTERVAL WEEKDAY(NOW()) DAY),'%Y-%m-%d') AS be, DATE_FORMAT(NOW()+ INTERVAL 7-WEEKDAY(NOW()) DAY,'%Y-%m-%d') AS ed
+		FROM u_heartesting uh
+		WHERE 1=1 
+			AND uh.user_id = #{userId} 
+			AND WEEKOFYEAR(uh.h_date) = WEEKOFYEAR(NOW())
+		GROUP BY DATE_FORMAT(uh.h_date, '%Y-%m-%d')
+		 -->
+	</select>
+	
+	<!-- 月胎心值 -->
+	<select id="getHeartMonthData" resultType="pd"  resultMap="heartInfoMap">
+		SELECT 
+			 MONTH(uh.h_date) AS month_num,  uh.h_fetalheart, uh.h_heartrate, uh.h_tlenght,
+			 DATE_FORMAT(uh.h_date, '%Y-%m') AS 'month', DATE_FORMAT(uh.h_datetime,'%Y-%m-%d %H:%i:%s') AS h_datetime, uh.h_date
+		FROM u_heartesting uh
+		WHERE 1=1 
+		AND uh.user_id = #{userId} AND DATE_FORMAT(uh.h_date, '%Y-%m') = DATE_FORMAT(NOW(), '%Y-%m') 
+		ORDER BY uh.h_date ASC
+		<!-- SELECT 
+			 MONTH(uh.h_date) AS month_num,  AVG(uh.h_fetalheart) AS h_fetalheart,AVG(uh.h_heartrate) h_heartrate,AVG(uh.h_tlenght) h_tlenght,
+			 DATE_FORMAT(uh.h_date, '%Y-%m') AS 'month'
+		FROM u_heartesting uh
+		WHERE 1=1 
+		AND uh.user_id = #{userId}
+		GROUP BY DATE_FORMAT(uh.h_date, '%Y-%m')
+		 -->
+	</select>
+	
+	<insert id="saveCollection" parameterType="pd" flushCache="false">
+		INSERT INTO u_collection 
+				(user_id,c_type,doctor_id) 
+		VALUE
+				(
+				#{userId},#{cType},#{doctorId}
+				)
+	</insert>
+	
+	<resultMap type="pd" id="bloodMeterInfoMap">
+		<result column="user_id" property="userId"/>							<!-- 用户id -->
+		<result column="weekdays" property="weekDays"/>				<!-- 一周的第几天 -->
+		<result column="diastolic" property="diastolic"/>					<!-- 舒张压 -->
+		<result column="systolic" property="systolic"/>					<!-- 收缩压 -->
+		<result column="heartrate" property="heartRate"/>				<!-- 心率 -->
+		<result column="b_datetime" property="dateTime"/>				<!-- 具体时间, 带时分秒 -->
+		<result column="dateTime" property="date"/>						<!-- 具体时间, 不带时分秒 -->
+		<result column="be" property="beginDate"/>							<!-- 这周或这个月开始日期 -->
+		<result column="ed" property="endDate"/>							<!-- 这周或这个月结束日期 -->
+		<result column="month_num" property="monthIndex"/>		<!-- 月的索引 -->
+		<result column="month" property="month"/>							<!-- 具体月份 -->
+	</resultMap>
+	
+	<select id="getBloodMeterWeekData" resultType="pd"  resultMap="bloodMeterInfoMap"  useCache="false">
+		SELECT ub.user_id, WEEKDAY(ub.b_datetime) AS weekdays, ub.b_diastolic AS diastolic, ub.b_systolic AS systolic, ub.b_heartrate AS heartrate, DATE_FORMAT(ub.b_datetime,'%Y-%m-%d %H:%i:%s') AS b_datetime, DATE_FORMAT(ub.b_datetime, '%Y-%m-%d') AS 'dateTime',
+			DATE_FORMAT(DATE_SUB(NOW(), INTERVAL WEEKDAY(NOW()) DAY),'%Y-%m-%d') AS be, DATE_FORMAT(NOW()+ INTERVAL 7-WEEKDAY(NOW()) DAY,'%Y-%m-%d') AS ed
+		FROM u_bloodmeter ub 
+	 	WHERE 1=1 AND ub.user_id = #{userId} AND WEEKOFYEAR(ub.b_datetime) = WEEKOFYEAR(NOW()) 
+		ORDER BY ub.b_datetime ASC
+	<!-- 
+		SELECT ub.user_id, WEEKDAY(ub.b_datetime) AS weekdays, AVG(ub.b_diastolic) AS diastolic, AVG(ub.b_systolic) AS systolic, AVG(ub.b_heartrate) AS heartrate, DATE_FORMAT(ub.b_datetime,'%Y-%m-%d %H:%i:%s') AS b_datetime, DATE_FORMAT(ub.b_datetime, '%Y-%m-%d') AS 'dateTime',
+	 	DATE_FORMAT(DATE_SUB(NOW(), INTERVAL WEEKDAY(NOW()) DAY),'%Y-%m-%d') AS be, DATE_FORMAT(NOW()+ INTERVAL 7-WEEKDAY(NOW()) DAY,'%Y-%m-%d') AS ed
+	 	FROM u_bloodmeter ub
+	 	WHERE 1=1 AND ub.user_id = #{userId} AND WEEKOFYEAR(ub.b_datetime) = WEEKOFYEAR(NOW())
+		GROUP BY DATE_FORMAT(ub.b_datetime, '%Y-%m-%d')
+		 -->
+	</select>
+	
+	<select id="getBloodMeterMonthData" resultType="pd" resultMap="bloodMeterInfoMap"  useCache="false">
+		SELECT MONTH(ub.b_datetime) AS month_num, ub.b_diastolic AS diastolic, ub.b_systolic AS systolic, ub.b_heartrate AS heartrate, DATE_FORMAT(ub.b_datetime, '%Y-%m') AS 'month',  DATE_FORMAT(ub.b_datetime,'%Y-%m-%d %H:%i:%s') AS b_datetime, DATE_FORMAT(ub.b_datetime, '%Y-%m-%d') AS 'dateTime'
+		FROM u_bloodmeter ub
+	 	WHERE 1=1 AND ub.user_id = #{userId} and DATE_FORMAT(ub.b_datetime, '%Y-%m') = DATE_FORMAT(NOW(), '%Y-%m') 
+		ORDER BY ub.b_datetime ASC
+		<!-- 
+		SELECT MONTH(ub.b_datetime) AS month_num, AVG(ub.b_diastolic) AS diastolic, AVG(ub.b_systolic) AS systolic, AVG(ub.b_heartrate) AS heartrate, DATE_FORMAT(ub.b_datetime, '%Y-%m') AS 'month'
+		FROM u_bloodmeter ub
+	 	WHERE 1=1 AND ub.user_id = #{userId}
+		GROUP BY DATE_FORMAT(ub.b_datetime, '%Y-%m')
+		LIMIT 0, 7
+		 -->
+	</select>
+	
+	<insert id="saveContentCollection" parameterType="pd" flushCache="false">
+		INSERT INTO u_collection 
+				(user_id,c_type,content_id) 
+		VALUE
+				(
+				#{userId},#{cType},#{contentId}
+				)
+	</insert>
+	
+	<delete id="deleteCollection" parameterType="pd" flushCache="false" >
+		DELETE FROM u_collection 
+		WHERE 1=1 
+		AND id = #{id}
+	</delete>
+	
+	<resultMap type="pd" id="collectionMap">
+		<result column="id" property="id" />
+		<result column="user_id" property="userId"/>							<!-- 用户id -->
+		<result column="c_type" property="cType"/>							<!-- 收藏类型 -->
+		<result column="doctor_id" property="doctorId"/>					<!-- 医生id -->
+		<result column="content_id" property="conntentId"/>			<!-- 文章id -->
+	</resultMap>
+	
+	<select id="getCollectionByType" parameterType="pd" resultMap="collectionMap" flushCache="false" >
+		SELECT * FROM u_collection
+		WHERE 1=1
+		AND user_id = #{userId}
+		AND c_type =#{cType}
+	</select>
+	
+	<select id="getCollectionById" parameterType="pd" resultMap="collectionMap" flushCache="false" >
+		SELECT * FROM u_collection
+		WHERE 1=1
+		AND id = #{id}
+	</select>
+	
+	<select id="getCollectionByRefId" parameterType="pd" resultMap="collectionMap" flushCache="false" >
+		SELECT * FROM u_collection
+		WHERE 1=1
+		AND user_id = #{userId}
+		<if test = "cType == 'd'.toString() || cType == 'D'.toString()" >
+			AND doctor_id = #{refId} 
+		</if>
+		<if test = "cType == 'c' .toString() || cType == 'C'.toString()" >
+			AND content_id = #{refId}
+		</if>
+	</select>
+	
+	<resultMap type="pd" id="articleCollectionMap">
+		<result column="id" property="id" />
+		<result column="user_id" property="userId"/>							<!-- 用户id -->
+		<result column="edu_id" property="eduId"/>							<!-- 类别 -->
+		<result column="content_id" property="contentId" />			<!-- 文章id -->
+		<result column="con_fullinfo" property="conFullInfo" />			<!-- 文章内容 -->
+		<result column="con_attach" property="conAttach" />			<!-- 文章图片 -->
+		<result column="con_browse" property="conBrowse" />			<!-- 文章流量数 -->
+		<result column="con_title" property="conTitle" />					<!-- 文章流量数 -->
+	</resultMap>
+	
+	<!-- 文章收藏 -->
+	<select id="getArticleCollection" parameterType = "pd" resultMap = "articleCollectionMap">
+		SELECT c.content_id, e.edu_id, e.con_title, e.con_fullinfo, e.con_attach, e.con_browse
+		FROM u_collection c
+		LEFT JOIN edu_content e ON c.content_id = e.content_id
+		WHERE 1 = 1
+			AND c.user_id = #{userId} AND c.c_type = 'c'
+		<!-- <if test = "lastTime != null and lastTime != ''">
+			AND e.con_dt > #{lastTime}
+		</if> -->
+			ORDER BY c.id DESC
+		<if test = "begin != null ">
+			LIMIT #{begin}, #{offset}  
+		</if>
+	</select>
+	
+	<!-- 上传头像android -->
+	<update id="updateMyPhoto" parameterType="pd" flushCache="false">
+		UPDATE sys_user_info SET
+		u_photo =  #{uPhoto}
+		where 1 = 1 
+			AND uuid = #{userId}
+	</update>
+	
+	<select id="findCollect" parameterType="pd" resultType="pd" useCache="false">
+		SELECT * FROM u_collection
+		WHERE 1 = 1
+		AND user_id = #{userId}
+		AND doctor_id = #{doctorId}
+	</select>
+	
+	<!-- 微信  修改头像 -->
+	<update id="updUserPhonto" parameterType="pd" flushCache="false">
+		UPDATE sys_user m LEFT JOIN sys_user_info d ON  m.user_id = d.uuid
+		<set>
+			<if test="user_namezs != null and user_namezs !=''">
+				m.name = #{user_namezs},
+				d.user_namezs = #{user_namezs},
+			</if>
+			<if test="u_photo != null and u_photo !=''">
+				d.u_photo = #{u_photo}
+			</if>
+		</set> 
+		WHERE m.user_id = #{uuid}
+	</update>
+</mapper>

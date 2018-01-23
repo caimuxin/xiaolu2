@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="HospitalMapper">
+	
+    <cache type="org.mybatis.caches.ehcache.LoggingEhcache"/>  
+	
+	
+	<!-- 医院信息 -->
+	<select id="hospitallistPage" parameterType="page" resultType="pd" useCache="false">
+		SELECT info.id,info.hospitalname,info.userid,info.hospitalcity,info.hospitalrank,info.hospitalurl,info.hospitalphone
+			  ,info.hospitaladdress,info.createtime,info.operateid,info.appearpicture
+			  
+		FROM d_hospitalinfo info
+		WHERE 1 = 1
+		<if test="pd.hospitalName != null and pd.hospitalName != ''">
+			AND hospitalname LIKE CONCAT('%',#{pd.hospitalName},'%')
+		</if>
+		<if test="pd.hospitalCity != null and pd.hospitalCity != ''">
+			AND hospitalcity LIKE CONCAT('%',#{pd.hospitalCity},'%')
+		</if>
+		order by createtime desc
+	</select>
+	
+	<!-- 通过医院Id获取数据 -->
+	<select id="findByHospitalId" parameterType="pd" resultType="pd" useCache="false">
+		SELECT info.id,info.hospitalname,info.anothername,info.userid,info.hospitalcity,info.hospitalrank,info.hospitalurl
+				,info.hospitalphone,info.hospitaladdress,info.createtime,info.operateid,info.appearpicture,info.introduction
+				,info.inguide,info.outguide,info.outnavigation,info.innavigation,info.ride
+		FROM d_hospitalinfo info
+		WHERE 
+		info.id = #{hospitalId}
+	</select>
+	
+	<!-- 修改 -->
+	<update id="hospitalEdit" parameterType="pd" flushCache="false">
+		update  d_hospitalinfo
+		set 	hospitalname				= #{hospitalname},
+				hospitalcity 				= #{hospitalcity},
+				hospitalrank 				= #{hospitalrank},
+				hospitalurl					= #{hospitalurl},
+				hospitalphone				= #{hospitalphone},
+				hospitaladdress				= #{hospitaladdress},
+				appearpicture				= #{appearpicture},
+				operateid					= #{operateid}
+			where 
+				id = #{hospitalid}
+	</update>
+	
+	<!-- 修改 -->
+	<update id="hospitalEditDetailF" parameterType="pd" flushCache="false">
+		update  d_hospitalinfo
+		set 	hospitalname				= #{hospitalname},
+				anothername					= #{anothername},
+				hospitalurl					= #{hospitalurl},
+				hospitalphone				= #{hospitalphone},
+				introduction				= #{introduction},
+				appearpicture				= #{appearpicture},
+				operateid					= #{operateid}
+			where 
+				id = #{hospitalid}
+	</update>
+	
+	<!-- 修改 -->
+	<update id="hospitalEditDetailTwo" parameterType="pd" flushCache="false">
+		update  d_hospitalinfo
+		set 	outnavigation				= #{outnavigation},
+				innavigation				= #{innavigation},
+				ride						= #{ride},
+				operateid					= #{operateid}
+			where 
+				id = #{hospitalid}
+	</update>
+	
+	<!-- 修改 -->
+	<update id="hospitalEditDetailThree" parameterType="pd" flushCache="false">
+		update  d_hospitalinfo
+		set 	inguide						= #{inguide},
+				outguide					= #{outguide},
+				operateid					= #{operateid}
+			where 
+				id = #{hospitalid}
+	</update>
+	
+	<!-- 通过hospitalName获取数据 -->
+	<select id="findByHospitalName" parameterType="pd" resultType="pd" useCache="false">
+		SELECT 
+				id,hospitalname,hospitalcity,hospitalurl,hospitalphone,hospitaladdress FROM d_hospitalinfo
+		WHERE 
+				hospitalname = #{hospitalname}
+	</select>
+	
+	
+	<!-- 新增hospital -->
+	<insert id="hospitalAdd" parameterType="pd" flushCache="false">
+		INSERT INTO d_hospitalinfo(
+					id,hospitalname,hospitalcity,hospitalrank,hospitalurl,hospitalphone,hospitaladdress,appearpicture,createtime,operateid
+					)
+		VALUES(
+					#{hospitalid},#{hospitalname},#{hospitalcity},#{hospitalrank},#{hospitalurl},#{hospitalphone},#{hospitaladdress},#{appearpicture},#{createtime},#{operateid}
+			   )
+	</insert>
+	
+	<!-- 删除hospital -->
+	<delete id="hospitalDelete" parameterType="pd" flushCache="false">
+		delete from d_hospitalinfo
+		where 
+			id = #{hospitalId}
+	</delete>
+	
+	
+	<!-- 批量删除用户 -->
+	<delete id="hospitalDeleteAll" parameterType="String" flushCache="false">
+		delete from d_hospitalinfo
+		where 
+			id in
+  			 <foreach item="item" index="index" collection="array" open="(" separator="," close=")">
+                  #{item}
+             </foreach>
+	</delete>
+	
+	<!-- 医院列表(全部) -->
+	<select id="listAllHospital" parameterType="pd" resultType="pd" useCache="false">
+		SELECT id,hospitalname,userid,hospitalcity,hospitalrank,hospitalurl,hospitalphone,hospitaladdress,createtime,operateid
+		FROM d_hospitalinfo
+		WHERE 1=1
+		
+		<if test="hospitalName != null and hospitalName != ''">
+			AND hospitalname LIKE CONCAT('%',#{hospitalName},'%')
+		</if>
+		<if test="hospitalCity!=null and hospitalCity!=''">
+			AND hospitalcity LIKE CONCAT('%',#{hospitalCity},'%') 
+		</if>
+		order by createtime desc
+	</select>
+	
+	<!-- 医院下拉框信息 -->
+	<select id="hospitalOption"  parameterType="pd" resultType="pd" useCache="false">
+		SELECT id hospitalId,hospitalname hospitalName
+		FROM d_hospitalinfo
+		WHERE 1=1
+	</select>
+	
+	<!-- 新增hospital图片 -->
+	<insert id="hospitalMainPcAdd" parameterType="pd" flushCache="false">
+		INSERT INTO d_hospitalinfo_picture(
+					hospitalpcid,hospitalpctitle,hospitalpcname,hospitalpcpath,createtime,remark
+					)
+		VALUES(
+					#{hospitalPcId},#{hospitalPcTitle},#{hospitalPcName},#{hospitalPcPath},#{createTime},#{remark}
+			   )
+	</insert>
+	
+	<!-- 修改时的删除图片 -->
+	<update id="delHospitalp" parameterType="pd">
+		update  d_hospitalinfo
+			set 
+				<if test="pictureType !=null and pictureType == 'appearpicture'">
+					appearpicture			= ''
+				</if>
+				<if test="pictureType !=null and pictureType == 'innavigation'">
+					innavigation			= ''
+				</if>
+				<if test="pictureType !=null and pictureType == 'outnavigation'">
+					outnavigation			= ''
+				</if>
+			where 
+				id = #{hospitalId}
+	</update>
+	
+	<!-- 修改 -->
+	<update id="editHospitalP" parameterType="pd">
+		update  d_hospitalinfo_picture
+			set 
+				<if test="hospitalPcName != null and hospitalPcName != ''">
+					hospitalpcname = #{hospitalPcName},
+				</if>
+				<if test="hospitalPcPath != null and hospitalPcPath != ''">
+					hospitalpcpath = #{hospitalPcPath}
+				</if>
+			where 
+				hospitalpcid = #{hospitalPcId}
+	</update>
+	
+	<!-- 删除图片-->
+	<delete id="deleteHospitalP" parameterType="pd">
+		delete from d_hospitalinfo_picture
+		where 
+			hospitalpcid = #{hospitalpcid}
+	</delete>
+	
+	<resultMap type="pd" id="hospitalMap">
+		<id column="id" property="hospitalId"/>
+		<result column="hospitalname" property="hospitalName"/>
+		<result column="hospitalrank" property="hospitalRank"/>
+		<result column="hospitalcity" property="hospitalCity"/>
+		<result column="hospitalurl" property="hospitalUrl"/>
+		<result column="hospitalphone" property="hospitalPhone"/>
+		<result column="hospitaladdress" property="hospitalAddress"/>
+		<result column="appearpicture" property="appearPicture"/>
+		<result column="introduction" property="introduction"/>
+		<result column="outnavigation" property="outNavigation"/>
+		<result column="innavigation" property="inNavigation"/>
+		<result column="inguide" property="inGuide"/>
+		<result column="outguide" property="outGuide"/>
+		<result column="ride" property="ride"/>
+		<result column="antenatalurl" property="antenatalUrl"/>
+	</resultMap>
+	
+	<!-- 医院信息 android端-->
+	<select id="hospitalInfoApp" parameterType="pd" resultMap="hospitalMap" useCache="false">
+		SELECT info.id,info.hospitalname,info.hospitalcity,info.hospitalrank,info.hospitalurl,info.hospitalphone
+			  ,info.hospitaladdress,info.appearpicture,info.introduction,info.outnavigation,info.innavigation 
+			  ,info.inguide,info.outguide,info.ride
+		FROM d_hospitalinfo info
+		WHERE 1 = 1
+		<if test="hospitalId != null and hospitalId != ''">
+			AND id =#{hospitalId}
+		</if>
+		<if test="hospitalName != null and hospitalName != ''">
+			AND hospitalname LIKE CONCAT('%',#{hospitalName},'%')
+		</if>
+		<if test="hospitalCity != null and hospitalCity != ''">
+			AND hospitalcity LIKE CONCAT('%',#{hospitalCity},'%')
+		</if>
+		order by createtime desc
+	</select>
+	
+	<!-- 医院列表展示接口 android -->
+	<select id="hospitalNameApp" parameterType="pd" resultMap="hospitalMap" useCache="false">
+		SELECT info.id,info.hospitalname,info.hospitalcity,info.antenatalurl
+		FROM d_hospitalinfo info
+		WHERE 1 = 1
+			AND (STATUS = 'y' OR STATUS IS NULL)
+		<if test="hospitalName != null and hospitalName != ''">
+			AND hospitalname LIKE CONCAT('%',#{hospitalName},'%')
+		</if>
+		<if test="hospitalCity != null and hospitalCity != ''">
+			AND hospitalcity LIKE CONCAT('%',#{hospitalCity},'%')
+		</if>
+		order by createtime desc
+	</select>
+	
+	<!-- 默认医院接口 android -->
+	<select id="hospitalDefaultApp" parameterType="pd" resultMap="hospitalMap" useCache="false">
+		SELECT info.id, info.hospitalname,info.antenatalurl
+		FROM d_hospitalinfo info
+		WHERE 1 = 1 AND defaulth = 'Y'
+		<if test="appId != null and appId != ''">
+			AND appid = #{appId }
+		</if>
+	</select>
+	
+</mapper>

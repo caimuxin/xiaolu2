@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="UoutpatientMapper">
+
+	<cache type="org.mybatis.caches.ehcache.LoggingEhcache" />
+
+	<!-- 查询门诊信息 -->
+	<select id="findUoutpatient" parameterType="pd" resultType="pd" useCache="false">
+
+		SELECT
+			A.ID,
+			A.USER_ID,
+			A.O_DATE,
+			A.HOSPITAL_ID,
+			A.O_HOSPITAL,
+			A.OFFICE_ID,
+			A.O_OFFICE,
+			A.DOCTOR_ID,
+			A.O_DOCTOR,
+			A.O_PREGNANCY,
+			A.O_CHECK,
+			A.O_WEIGHT,
+			A.O_WAIST,
+			A.O_HEART,
+			A.O_BLOOD,
+			A.O_WOMB,
+			A.O_ATTACHMENT,
+			B.HOSPITALNAME AS HNAME,
+			C.OFFICE_NAME AS ONAME,
+			D.DOCTOR_NAME AS DNAME,
+			DATE_FORMAT(A.O_DATE,'%Y-%m-%d') as dates,
+			DATE_FORMAT(A.O_DATE,'%H') as times
+			FROM
+			U_OUTPATIENT AS A
+			INNER JOIN D_HOSPITALINFO AS B ON A.HOSPITAL_ID=B.ID
+			INNER JOIN D_OFFICEINFO AS C ON A.OFFICE_ID=C.OFFICE_ID
+			INNER JOIN DOCTOR_INFO AS D ON A.DOCTOR_ID=D.DOCTOR_ID
+			WHERE 1=1
+		<if test="uuid !=null and  uuid !=''">
+			AND A.USER_ID=#{uuid}
+		</if>
+			ORDER BY
+			A.O_DATE DESC
+	</select>
+
+	<!-- 添加门诊信息-->
+	<insert id="uOutpatientAdd" parameterType="pd" flushCache="false">
+		INSERT INTO U_OUTPATIENT
+		  (USER_ID,
+		   O_DATE, 
+		   HOSPITAL_ID,
+		   OFFICE_ID,
+		   DOCTOR_ID,
+		   O_PREGNANCY, 
+		   O_CHECK, 
+		   O_WEIGHT, 
+		   O_WAIST,
+		   O_HEART, 
+		   O_BLOOD,
+		   O_WOMB,  
+		   O_ATTACHMENT) 
+		   VALUES
+ 		(#{user_id},#{o_date},#{hospital_id},#{office_id},#{doctor_id},#{o_pregnancy}, #{o_check}, #{o_weight}, #{o_waist}, #{o_heart}, #{o_blood}, #{o_womb}, #{o_attachment})
+	</insert>
+	
+	<!-- 修改门诊信息 -->
+	<update id="uOutpatientUpd" parameterType="pd" flushCache="false">
+	
+		update  U_OUTPATIENT
+			SET 	
+				O_PREGNANCY		 =	#{o_pregnancy},
+				O_CHECK			 =	#{o_check},
+				O_WEIGHT		 =	#{o_weight},
+				O_WAIST			 =	#{o_waist},
+				O_HEART			 =	#{o_heart},
+				O_BLOOD			 =	#{o_blood},
+				O_WOMB			 =	#{o_womb}
+			WHERE 
+				ID = #{id}
+	
+	</update>
+	
+	<!-- 删除门诊信息 -->
+	<delete id="uOutpatientDel" parameterType="pd" flushCache="false">
+		DELETE FROM U_OUTPATIENT
+		WHERE ID=#{id}
+	</delete>
+	
+	<!-- 删除门诊信息图片 -->
+	<update id="oAttachmentDel" parameterType="pd" flushCache="false">
+		UPDATE U_OUTPATIENT
+			SET
+			O_ATTACHMENT=''
+		WHERE ID=#{id}
+	</update>
+</mapper>

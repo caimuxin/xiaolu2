@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="DialogueMapper">
+
+	<!-- 插入对话主表记录 -->
+	<insert id="insertDialogue" parameterType = "pd" useGeneratedKeys="true" keyProperty="id">
+		insert into t_dialogue (dialogueId, type, createTime) values (#{dialogueId}, #{type}, #{createTime})
+	</insert>
+	
+	<!-- 插入对话详情表记录 -->
+	<insert id="insertDialogueDetail" parameterType = "pd" useGeneratedKeys="true" keyProperty="id">
+		insert into t_dialogue_detail (mainId, dialogueId, messageId, sender, receiver, multiReceiver, type, text, createTime) 
+		values (#{mainId}, #{dialogueId}, #{messageId}, #{sender}, #{receiver}, #{multiReceiver}, #{type}, #{text}, #{createTime})
+	</insert>
+</mapper>

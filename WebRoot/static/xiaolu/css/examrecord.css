@@ -1,0 +1,57 @@
+*{ font-size:14px; color:#595959; font-family:"宋体";}
+.clearfix{ clear:both;}
+dd,dl,ul,li{ margin:0; padding:0; list-style:none;}
+h1{ font-size:16px; font-weight:bold; padding:0; margin:0;}
+a{ text-decoration:none;}
+input{ outline:none;}
+/*导航*/
+
+.table li{ float:left; width:120px; line-height:24px; font-size:12Px; color:#4f99c6; text-align:center; border:1px #4f99c6 solid;}
+.table li a{ color:#4f99c6;}
+.table .l_yuanjiao{ border-radius:5px 0px 0px 5px;}
+.table .r_yuanjiao{ border-radius:0px 5px 5px 0px; }
+.table .this{ background-color:#4f99c6; color:#ffffff;}
+.table .this a{color:#ffffff;}
+.table .no_border{ border-right:none;}
+.table li:hover{ background-color:#4f99c6; color:#ffffff;}
+.table li:hover a{ color:#ffffff;}
+.table .current{ background-color:#4f99c6; color:#ffffff;}
+/*搜索*/
+.jc_jlb_xuanze{ }
+.float_left{ float:left;}
+.float_right{ float:right;}
+.jc_jlb_big_box{ border:1px #dedede solid; padding-top:20px; padding-left:20px; margin-top:20px; padding-bottom:20px; padding-right:20px;}
+.jc_jlb_xuanze ul{ padding-bottom:30px; float:left; position:relative;}
+.jc_jlb_xuanze li{ float:left; line-height:32px;}
+.jc_jlb_xuanze select{ width:180px; height:32px; outline:none;}
+.jc_jlb_xuanze input{ width:145px; height:25px; padding-left:25px;line-height:12px; margin-left:4px;outline:none;}
+.jc_jlb_xuanze .search{ width:30px; height:32px; border:none; color:#6fb3e0; outline:none; cursor:pointer; background-image:url(../imgs/search.png); background-repeat:no-repeat; background-position:center;}
+.jc_jlb_xuanze .search:hover{ background-image:url(../imgs/bg_search.png); background-repeat:no-repeat; background-position:center;}
+.jc_jlb_xuanze .search_icon{ position:absolute; top:10px; left:10px;}
+/*近一周 近一月 近一季度*/
+.jc_jlb_time_table{ height:42px; border-bottom:#dedede 1px solid; margin-bottom:40px;}
+.jc_jlb_time_table ul{ margin-left:auto; margin-right:auto; width:324px;}
+.jc_jlb_time_table li{ float:left; width:84px; height:41px; background-color:#e5e5e5; margin-left:3px; margin-right:3px; line-height:42px; padding-left:18px; font-size:16px;}
+.jc_jlb_time_table li:hover{ background-color:#ffc926;}
+.jc_jlb_time_table .time_this{ background-color:#ffc926;}
+.jc_jlb_time_table .jinyijidu{ padding-left:12px; width:90px;}
+/*血压记录*/
+.jc_jlb_xueyajilu{ margin-bottom:60px; width:1698px;}
+.jc_jlb_xueyajilu_tital h1{ float:left; background-image:url(../imgs/neirong16px.png); background-repeat:no-repeat; padding-left:22px; margin-left:20px; margin-top:20px; margin-bottom:10px;}
+.jc_jlb_tital td{ width:531px; height:42px; padding-left:5px; border-left:1px solid #dedede; border-top:1px solid #dedede; border-bottom:1px solid #dedede;font-size:16px; font-weight:bold; background-color:#4f99c6; color:#ffffff;}
+.jc_jlb_tital span{ color:#ffffff; font-size:14px; font-weight:normal;}
+.jc_jlb_tital .caozuo{ width:114px;}
+.jc_jlb_tital .border_r{ border-right:1px solid #dedede;}
+.jc_jlb_tital .caozuo{ width:76px; text-align:center;}
+.jc_jlb_shuju td{ width:531px; height:42px; border-left:1px solid #dedede; border-bottom:1px solid #dedede; padding-left:5px;}
+.jc_jlb_shuju .biaoti{text-align:left; padding-left:5px;}
+.jc_jlb_shuju .caozuo{ width:76px; text-align:center;}
+.jc_jlb_shuju .border_r{ border-right:1px solid #dedede;}
+.jc_jlb_shuju .bianji{ width:24px; height:24px; border:none; background-image:url(../imgs/xiangqing.png);outline-style:none; cursor:pointer;}
+.jc_jlb_shuju .bianji:hover{ background-image:url(../imgs/bg_xiangqing.png);}
+.jc_jlb_shuju .bgcolor95{ background-color:#f2f2f2;}
+.jc_jlb_tital .jc_jlb_taixin{ width:1062px;}
+.jc_jlb_shuju .jc_jlb_taixin{ width:1062px;}
+/*血压趋势图*/
+.jc_qushitu_xueyaqushitu{ height:560px; background-color:#f2f2f2; border:1px solid #dedede; margin-bottom:60px;}
+.jc_qushitu_tizhongqushitu{ height:560px; background-color:#f2f2f2; border:1px solid #dedede;}

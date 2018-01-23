@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="EduContentMapper">
+
+	<cache type="org.mybatis.caches.ehcache.LoggingEhcache"/>
+
+	<!-- 查询所有内容信息 -->
+	<select id="contentlistPage" parameterType="page" resultType="pd" useCache="false">
+
+		SELECT
+		CONTENT_ID,
+		EDU_ID,
+		CON_TITLE,
+		CON_USERID,
+		CON_DT,
+		CON_FULLINFO,
+		CON_ATTACH,
+		CON_COMMENT,
+		CON_BROWSE,
+		USERNAME
+		FROM
+		EDU_CONTENT E LEFT JOIN SYS_USER S ON E.CON_USERID=S.USER_ID WHERE 1=1
+		<if test="pd.eduId != null and pd.eduId != ''">
+			AND EDU_ID = #{pd.eduId}
+		</if>
+		<if test="pd.conTitle !=null and pd.conTitle != ''">
+			 <!-- CON_TITLE LIKE CONCAT('%',#{pd.conTitle},'%') -->
+			and
+				(
+					 CON_TITLE LIKE CONCAT(CONCAT('%',#{pd.conTitle}),'%')
+					 or 
+					 S.USERNAME LIKE CONCAT(CONCAT('%',#{pd.conTitle}),'%')
+					 or
+					 CON_FULLINFO LIKE CONCAT(CONCAT('%', #{pd.conTitle}),'%')
+				)
+				
+		</if>
+		
+		<if test="pd.userName !=null and pd.userName !=''">
+			AND S.USERNAME = #{pd.userName}
+		</if>
+		
+		<if test="pd.conComment !=null and pd.conComment !='' and pd.conComments !=null and pd.conComments !=''">
+		
+			AND CON_COMMENT BETWEEN #{pd.conComment} AND #{pd.conComments}
+			
+		</if>
+		
+		<if test="pd.conDt !=null and pd.conDt !='' and pd.conDts !=null and pd.conDts !=''">	
+			<![CDATA[
+			AND DATE_FORMAT(CON_DT,'%Y-%m-%d')>=#{pd.conDt} AND DATE_FORMAT(CON_DT,'%Y-%m-%d')<=#{pd.conDts}
+			]]>
+		</if>
+				
+	</select>
+	
+	<!-- 判断文章标题是否存在-->
+	<select id="getContentName" parameterType="pd" resultType="pd" useCache="false">
+		SELECT
+		CONTENT_ID,
+		EDU_ID,
+		CON_TITLE,
+		CON_USERID,
+		CON_DT,
+		CON_FULLINFO,
+		CON_ATTACH,
+		CON_COMMENT,
+		CON_BROWSE
+		FROM
+		EDU_CONTENT
+		where 1=1
+		<if test="conTitle !=null and conTitle!=''">
+		AND CON_TITLE=#{conTitle}
+		</if>
+		<if test="content_id !=null and content_id!=''">
+		AND CONTENT_ID !=#{content_id}
+		</if>
+	</select>
+	
+	<!--根据Id查询文章内容-->
+	<select id="getContentId" parameterType="pd" resultType="pd" useCache="false">
+		SELECT
+		CONTENT_ID,
+		EDU_ID,
+		CON_TITLE,
+		CON_USERID,
+		CON_DT,
+		CON_FULLINFO,
+		CON_ATTACH,
+		CON_COMMENT,
+		CON_BROWSE,
+		B.USERNAME
+		FROM
+		EDU_CONTENT AS A 
+		LEFT JOIN SYS_USER AS B 
+		ON A.CON_USERID=B.USER_ID
+		WHERE 1=1
+		<if test="content_id !=null and content_id!=''">
+		AND CONTENT_ID=#{content_id} 
+		</if>
+	</select>
+	
+	<!-- 批量删除用户 -->
+	<delete id="deleteContent" parameterType="String">
+		DELETE FROM EDU_CONTENT
+		WHERE 
+			CONTENT_ID in
+  			 <foreach item="item" index="index" collection="array" open="(" separator="," close=")">
+                  #{item}
+             </foreach>
+	</delete>
+	
+	<!-- 发布文章 -->
+	<!-- 新增类别 -->
+	<insert id="addEduContent" parameterType="pd" flushCache="false">
+		INSERT
+		INTO EDU_CONTENT (
+		content_id,
+		edu_id,
+		con_title,
+		con_userid,
+		con_dt,
+		con_fullinfo,
+		con_attach,
+		con_comment,
+		con_browse
+		)
+		VALUES
+		(
+		#{contentId},
+		#{eduId},
+		#{conTitle},
+		#{conUserid},
+		#{conDt},
+		#{conFullinfo},
+		#{conAttach},
+		#{conComment},
+		#{conBrowse}
+		)
+	</insert>
+	
+	<!-- 修改文章 -->
+	<update id="updEduContent" parameterType="pd" flushCache="false">
+	UPDATE edu_content 
+	SET 
+	con_title			=		#{con_title},
+	con_fullinfo		=		#{con_fullinfo},
+	edu_id				=		#{edu_id},
+	con_attach			=		#{con_attach}
+	WHERE
+	content_id			=		#{content_id}
+	
+	
+	</update>
+	
+	<!-- 宣教app端 -->
+	<!-- 文章具体 -->
+	<resultMap type="pd" id="articleInfoMap">
+		<result column="content_id" property="contentId"/>					<!-- 文章id -->
+		<result column="edu_id" property="eduId"/>								<!-- 类别id -->
+		<result column="con_title" property="conTitle"/>						<!-- 文章标题 -->
+		<result column="con_userid" property="conUserId"/>					<!-- 发布作者 -->
+		<result column="con_dt" property="conDt"/>								<!-- 发布时间 -->
+		<result column="con_fullinfo" property="conFullInfo"/>				<!-- 文章内容 -->
+		<result column="con_attach" property="conAttach"/>					<!-- 附件地址, 一般是图片 -->
+		<result column="con_comment" property="conComment"/>		<!-- 评论量 -->
+		<result column="con_browse" property="conBrowse"/>				<!-- 浏览量 -->
+		<result column="NAME" property="conUserName"/>					<!-- 浏览量 -->
+	</resultMap>
+	
+	<!-- 根据文章类别获得list -->
+	<select id="listEduArticleByCategory" parameterType = "pd"  resultMap = "articleInfoMap" useCache="false">
+		SELECT ec.content_id, ec.edu_id, ec.con_title, ec.con_userid, ec.con_dt, ec.con_fullinfo, ec.con_attach, ec.con_comment, ec.con_browse, user.NAME FROM edu_content ec
+		LEFT JOIN  SYS_USER user ON user.USER_ID = ec.con_userid
+		WHERE 1 = 1
+		<if test = "eduId != null and eduId != ''">
+			AND ec.edu_id = #{eduId}
+		</if>
+		<if test = "lastTime != null and lastTime != ''">
+			AND ec.con_dt > #{lastTime}
+		</if>
+			ORDER BY ec.con_dt DESC
+		<if test = "begin != null ">
+			LIMIT #{begin}, #{offset}  
+		</if>
+	</select>
+	
+	<!-- 根据文章类别获得list -->
+	<select id="findEduArticleById" parameterType = "pd"  resultMap = "articleInfoMap" useCache="false">
+		SELECT ec.content_id, ec.edu_id, ec.con_title, ec.con_userid, ec.con_dt, ec.con_fullinfo, ec.con_attach, ec.con_comment, ec.con_browse, user.NAME FROM edu_content ec
+		LEFT JOIN  SYS_USER user ON user.USER_ID = ec.con_userid
+		WHERE 1 = 1
+		<if test = "contentId != null and contentId != ''">
+			AND ec.content_id = #{contentId}
+		</if>
+			ORDER BY ec.con_dt DESC
+	</select>
+	
+	<!-- 更新阅读量 -->
+	<update id="updateEduArticleBrowse" parameterType="pd"  flushCache="false">
+		UPDATE edu_content SET 
+		con_browse = (con_browse + 1) 
+		WHERE content_id = #{contentId}
+	</update>
+	
+	
+	<!-- 宣教微信端 -->
+	<!-- 文章具体 -->
+	<resultMap type="pd" id="contentInfoMap">
+		<result column="content_id" property="contentId"/>					<!-- 文章id -->
+		<result column="edu_id" property="eduId"/>								<!-- 类别id -->
+		<result column="con_title" property="conTitle"/>						<!-- 文章标题 -->
+		<result column="con_userid" property="conUserId"/>					<!-- 发布作者 -->
+		<result column="con_dt" property="conDt"/>								<!-- 发布时间 -->
+		<result column="con_fullinfo" property="conFullInfo"/>				<!-- 文章内容 -->
+		<result column="con_attach" property="conAtach"/>					<!-- 附件地址, 一般是图片 -->
+		<result column="con_comment" property="conComment"/>		<!-- 评论量 -->
+		<result column="con_browse" property="conBrowse"/>				<!-- 浏览量 -->
+	</resultMap>
+	
+	<select id="findContentById" resultMap="contentInfoMap" parameterType="pd" useCache="false">
+
+	SELECT  e.content_id,e.edu_id,e.con_title,e.con_userid,e.con_dt,e.con_fullinfo,e.con_attach,e.con_comment,e.con_browse FROM  edu_content AS e WHERE e.content_id=#{id}
+	
+	</select>
+	
+	
+	<update id="delEduPhoto" parameterType="pd" flushCache="false">
+	
+		UPDATE edu_content SET 
+		con_attach = ''
+		WHERE content_id = #{contentId}
+	
+	</update>
+</mapper>

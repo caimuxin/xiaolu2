@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="EduTypeMapper">
+
+	<cache type="org.mybatis.caches.ehcache.LoggingEhcache"/>
+
+	<!-- 查询所有类别信息 -->
+	<select id="findEduTypelistPage" parameterType="page" resultType="pd" useCache="false">
+
+		SELECT
+		EDU_ID,
+		EDU_GRADE,
+		EDU_PID,
+		EDU_TITLE,
+		EDU_SEQUENCE,
+		EDU_STATE
+		FROM
+		EDU_TYPE
+		WHERE EDU_STATE !=0
+		ORDER BY EDU_SEQUENCE
+
+	</select>
+	
+	<!-- 根据Id查询类别信息 -->
+	<select id="getEduTypeId" parameterType="page" resultType="pd" useCache="false">
+
+		SELECT
+		EDU_ID,
+		EDU_GRADE,
+		EDU_PID,
+		EDU_TITLE,
+		EDU_SEQUENCE,
+		EDU_STATE
+		FROM
+		EDU_TYPE
+		WHERE 
+		EDU_ID = #{eduId}
+		AND EDU_STATE !=0
+	</select>
+	
+	<!-- 根据name查询类别信息 -->
+	<select id="getEduTypeName" parameterType="page" resultType="pd" useCache="false">
+
+		SELECT
+		EDU_ID,
+		EDU_GRADE,
+		EDU_PID,
+		EDU_TITLE,
+		EDU_SEQUENCE,
+		EDU_STATE
+		FROM
+		EDU_TYPE
+		WHERE
+		EDU_TITLE = #{eduTitle}
+		<if test="eduId !='' and eduId !=null ">
+		AND EDU_ID != #{eduId}
+		</if>
+		AND EDU_STATE !=0
+		
+	</select>
+	
+	<!-- 查询父级类别 -->
+	<select id="getEduTypeFid" parameterType="pd" resultType="pd" useCache="false">
+
+		SELECT
+		EDU_ID,
+		EDU_GRADE,
+		EDU_PID,
+		EDU_TITLE,
+		EDU_SEQUENCE,
+		EDU_STATE
+		FROM
+		EDU_TYPE
+		WHERE 1=1
+		AND EDU_STATE !=0
+		<if test="eduGrade !=null and eduGrade=='一类'">
+			AND EDU_GRADE='空'
+		</if>
+		
+		<if test="eduGrade !=null and eduGrade=='二类'">
+			AND EDU_GRADE='一类'
+		</if>
+		
+		<if test="eduGrade !=null and eduGrade=='三类'">
+			AND EDU_GRADE='二类'
+		</if>
+		
+		<if test="eduGrade !=null and eduGrade=='No3'">
+			AND EDU_GRADE !='三类'
+		</if>
+	</select>
+	
+
+	<!-- 新增类别 -->
+	<insert id="addEduType" parameterType="pd" flushCache="false">
+		INSERT
+		INTO EDU_TYPE (
+		EDU_ID,
+		EDU_GRADE,
+		EDU_PID,
+		EDU_TITLE,
+		EDU_SEQUENCE,
+		EDU_STATE
+		)
+		VALUES
+		(
+		#{eid},
+		#{edu_grade},
+		#{edu_pid},
+		#{edu_title},
+		#{edu_sequence},
+		#{edu_state}
+		)
+	</insert>
+	
+	<!-- 修改类别 -->
+	<update id="updEduType" parameterType="pd" flushCache="false">
+		UPDATE
+		EDU_TYPE
+		SET EDU_TITLE =#{edu_title},
+		EDU_PID = #{edu_pid},
+		EDU_SEQUENCE=#{edu_sequence}
+		WHERE
+		EDU_ID = #{eduId}
+	</update>
+
+	<!-- 修改类别的状态 -->
+	<update id="updEduState" parameterType="pd" flushCache="false">
+		UPDATE
+		EDU_TYPE
+		SET EDU_STATE = 0
+		WHERE
+		EDU_ID = #{eduId}
+	</update>
+	
+</mapper>
